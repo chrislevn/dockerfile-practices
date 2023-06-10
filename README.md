@@ -1,6 +1,14 @@
+<!--
+AUTHORS: Christopher Le
+Prefer only GitHub-flavored Markdown in external text.
+See README.md for details.
+-->
+
 # Good practices on writing Dockerfile
 
 https://chrislevn.github.io/dockerfile-practices/
+
+<!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
 
 <details markdown="1"> 
   <summary>Table of Contents</summary>
@@ -478,6 +486,48 @@ It's important to note that this example assumes the tests are included in a `te
 
 <a id="s3-good-demo"></a>
 
+```
+# Use a suitable base image
+FROM python:3.9-slim-buster
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only necessary files
+COPY requirements.txt .
+COPY app.py .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set the container user
+RUN groupadd -r myuser && useradd -r -g myuser myuser
+USER myuser
+
+# Expose the necessary port
+EXPOSE 8000
+
+# Set environment variables
+ENV DB_HOST=localhost
+ENV DB_PORT=3306
+ENV DB_USER=defaultuser
+ENV DB_PASSWORD=defaultpassword
+
+# Set the entrypoint command
+CMD ["python3", "app.py"]
+```
+
+In this example, we follow several best practices:
+
+- We use an appropriate base image (`python:3.9-slim-buster`) that provides a minimal Python environment.
+- We set the working directory to `/app` to execute commands and copy files within that directory.
+- Only necessary files (`requirements.txt` and `app.py`) are copied into the image, reducing unnecessary content.
+-Dependencies are installed using pip with the `--no-cache-dir` flag to avoid caching unnecessary artifacts.
+-A non-root user (`myuser`) is created and used to run the container, enhancing security.
+-The necessary port (`8000`) is exposed to allow access to the application.
+-Environment variables are set for configuring the database connection.
+-The `CMD` instruction specifies the command to run when the container starts.
+
 ---
 
 ## 4 Contributing guide
@@ -486,6 +536,9 @@ It's important to note that this example assumes the tests are included in a `te
 
 ## 5 References: 
 https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
+https://google.github.io/styleguide/pyguide.html
+https://github.com/dnaprawa/dockerfile-best-practices
 
 <a id="s5-references"></a>
 
