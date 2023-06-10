@@ -7,6 +7,7 @@ See README.md for details.
 # Good practices on writing Dockerfile
 
 Website: https://chrislevn.github.io/dockerfile-practices/
+<br/>
 Github: https://github.com/chrislevn/dockerfile-practices
 
 <!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
@@ -31,15 +32,20 @@ Github: https://github.com/chrislevn/dockerfile-practices
 - [3 Other references](#s3-others)
     * [3.1 EXPOSE](#s3.1-expose)
     * [3.2 ENTRYPOINT vs CMD vs RUN](#s3.2-entrypoint-cmd-run)
+    * [3.3 Docker Image vs Containers](#s3.3-image-vs-containers)
 - [4 Good demo](#s4-good-demo)
-- [5 Contributing guide](#s5-contributing-guide)
-- [6 References](#s6-references)
+- [5 Running Docker file with docker cli](#s5-run-with-docker-cli)
+- [6 Contributing guide](#s6-contributing-guide)
+- [7 References](#s7-references)
  
 </details>
 
 ---
 
 ## 1 Background
+Docker is an open-source platform that enables you to automate the deployment, scaling, and management of applications using containerization. It provides a way to package applications and their dependencies into a standardized unit called a container. 
+
+This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. 
 
 <a id="s1-background"></a>
 
@@ -223,6 +229,21 @@ Yes:
 ```
 
 In this improved example, the unnecessary artifacts are removed immediately after they are no longer needed, within the same `RUN` instruction. By doing so, Docker can leverage layer caching effectively. If the downloaded package remains unchanged, Docker can reuse the cached layer, avoiding redundant downloads and extractions.
+
+In Python, avoid using `pip freeze > requirements.txt` to generate libaries as it will install all related packages which can cause bugs, conflicts, and big file size. 
+
+Solutions: 
+- Use `pipreqs`: pipreqs starts by scanning all the python files (.py) in your project, then generates the requirements.txt file based on the import statements in each python file of the project. 
+`pip install pipreqs`
+`pipreqs /<your_project_root_path>/`
+
+Sometimes you might want to update the requirement file. In this case, you need to use the --forceoption to force the regeneration of the file.
+`pipreqs --force /<your_project_root_path>/`
+
+- `cat requirements.txt | xargs -n 1 pip install`
+<br/>
+Note: -a parameter is not available under MacOS, so old cat is more portable.
+Reference: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt
 
 <a id="s2.5-remove-unnecessary-artifacts"></a>
 
@@ -530,7 +551,7 @@ Reference: https://docs.docker.com/develop/develop-images/dockerfile_best-practi
 ## Other references: 
 <a id="s3-others"></a>
 
-### 2.13 EXPOSE
+### 3.1 EXPOSE
 The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. EXPOSE does not make the ports of the container accessible to the host.
 
 ```
@@ -549,7 +570,7 @@ For example, to publish port 80 of a container to port 8080 on the host machine:
 
 <a id="s3.1-expose"></a>
 
-### 2.14 ENTRYPOINT vs CMD vs RUN
+### 3.2 ENTRYPOINT vs CMD vs RUN
 
 - ENTRYPOINT: The ENTRYPOINT instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use ENTRYPOINT in either the shell form (as a command string) or the exec form (as an array of strings).
 
@@ -628,9 +649,29 @@ When you build and run the container, the Python application specified by app.py
 
 <a id="s3.2-entrypoint-cmd-run"></a>
 
-## 4 Good demo
+### 3.3 Docker Image vs Docker Containers: 
 
-<a id="s3-good-demo"></a>
+Docker Image:
+
+A Docker image is a lightweight, standalone, and executable package that contains everything needed to run a piece of software, including the code, runtime environment, libraries, dependencies, and system tools. It is created from a Dockerfile, which specifies the instructions for building the image. Images are immutable, meaning they are read-only and cannot be modified once created. You can think of an image as a blueprint or template for creating containers.
+
+Docker Container:
+
+A Docker container is a running instance of an image. It is a lightweight and isolated runtime environment that encapsulates an application and its dependencies. Containers are created from Docker images and can be started, stopped, paused, restarted, and deleted as needed. Each container runs in isolation, utilizing the host system's resources efficiently while providing a consistent environment for the application to run. Containers are transient and can be recreated easily from the corresponding image.
+
+Docker Image vs Containers
+- The key difference between a Docker image Vs a container is that a Docker image is a read-only immutable template that defines how a container will be realized. A Docker container is a runtime instance of a Docker image that gets created when the $ docker run command is implemented.  
+- Before the docker container can even exist docker templates/images are built using $ docker build CLI. 
+- Docker image templates can exist in isolation but containers can't exist without images.  
+- So docker image is an integral part of containers that differs only because of their objectives which we have already covered.  
+- Docker images can’t be paused or started but a Docker container is a run time instance that can be started or paused. 
+
+
+Reference: https://www.knowledgehut.com/blog/devops/docker-vs-container
+<a id="s3.3-image-vs-containers"></a>
+
+
+## 4 Good demo
 
 ```
 # Use a suitable base image
@@ -674,21 +715,45 @@ In this example, we follow several best practices:
 -Environment variables are set for configuring the database connection.
 -The `CMD` instruction specifies the command to run when the container starts.
 
+<a id="s4-good-demo"></a>
+
+## 5 Basic steps to running Docker file with docker cli: 
+- Make sure you have Docker installed and running on your system. You can check this by running the docker version command in your terminal or command prompt. If you have Docker Destop, make sure it is running. 
+- Create a Dockerfile in your project directory. The Dockerfile contains instructions for building your Docker image. 
+- Open a terminal or command prompt and navigate to the directory where your Dockerfile is located.
+- Build the Docker image using the `docker build` command. Provide a tag for your image using the `-t` option. For example:
+
+`docker build -t myapp:1.0 .`
+
+This command builds an image with the tag `myapp:1.0` using the Dockerfile in the current directory (`.`).
+
+Once the image is built, you can run a container based on that image using the docker run command. Specify the image name or tag with the -it option for an interactive session. For example:
+
+`docker run -it myapp:1.0`
+
+This command starts a container based on the myapp:1.0 image. `-it` is short for `--interactive` + `--tty`. When you docker run with this command it takes you straight inside the container.
+
+Note: If your application requires ports to be exposed, you can use the -p option to map container ports to host ports. For example, to expose port `8000`:
+`docker run -it -p 8000:8000 myapp:1.0`
+
+<a id="s5-run-with-docker-cli"></a>
 ---
 
-## 5 Contributing guide
+## 6 Contributing guide
 
 [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
-<a id="s5-contributing-guide"></a>
+<a id="s6-contributing-guide"></a>
 
-## 6 References: 
+## 7 References: 
 - https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 - https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
 - https://google.github.io/styleguide/pyguide.html
 - https://github.com/dnaprawa/dockerfile-best-practices
 - https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d
+- https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62
+- https://www.knowledgehut.com/blog/devops/docker-vs-container
 
-<a id="s6-references"></a>
+<a id="s7-references"></a>
 
 
