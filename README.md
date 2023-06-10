@@ -6,7 +6,8 @@ See README.md for details.
 
 # Good practices on writing Dockerfile
 
-https://chrislevn.github.io/dockerfile-practices/
+Website: https://chrislevn.github.io/dockerfile-practices/
+Github: https://github.com/chrislevn/dockerfile-practices
 
 <!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
 
@@ -26,9 +27,13 @@ https://chrislevn.github.io/dockerfile-practices/
     * [2.9 Document your Dockerfile](#s2.9-document-your-dockerfile)
     * [2.10 Use .dockerignore file](#s2.10-use-dockerignore)
     * [2.11 Test your image](#s2.11-test-your-image)
-- [3 Good demo](#s3-good-demo)
-- [4 Contributing guide](#s4-contributing-guide)
-- [5 References](#s5-references)
+    * [2.12 ADD or COPY](#s2.12-add=or-copy)
+- [3 Other references](#s3-others)
+    * [3.1 EXPOSE](#s3.1-expose)
+    * [3.2 ENTRYPOINT vs CMD vs RUN](#s3.2-entrypoint-cmd-run)
+- [4 Good demo](#s4-good-demo)
+- [5 Contributing guide](#s5-contributing-guide)
+- [6 References](#s6-references)
  
 </details>
 
@@ -482,7 +487,148 @@ It's important to note that this example assumes the tests are included in a `te
 
 <a id="s2.11-test-your-image"></a>
 
-## 3 Good demo
+### 2.12 ADD or COPY
+Although `ADD` and `COPY` are functionally similar, generally speaking, `COPY` is preferred. That’s because it’s more transparent than `ADD`. `COPY` only supports the basic copying of local files into the container, while `ADD` has some features (like local-only tar extraction and remote URL support) that are not immediately obvious. Consequently, the best use for `ADD` is local tar file auto-extraction into the image, as in `ADD rootfs.tar.xz /.`
+
+If you have multiple Dockerfile steps that use different files from your context, `COPY` them individually, rather than all at once. This ensures that each step’s build cache is only invalidated, forcing the step to be re-run if the specifically required files change.
+
+```
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt
+COPY . /tmp/
+```
+
+Results in fewer cache invalidations for the `RUN` step, than if you put the `COPY . /tmp/` before it.
+
+Because image size matters, using `ADD` to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead. That way you can delete the files you no longer need after they’ve been extracted and you don’t have to add another layer in your image. For example, you should avoid doing things like:
+```
+No:
+  ADD https://example.com/big.tar.xz /usr/src/things/
+  RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
+  RUN make -C /usr/src/things all
+```
+
+And instead, do something like:
+```
+Yes: 
+   RUN mkdir -p /usr/src/things \
+    && curl -SL https://example.com/big.tar.xz \
+    | tar -xJC /usr/src/things \
+    && make -C /usr/src/things all
+```
+For other items, like files and directories, that don’t require the tar auto-extraction capability of  `ADD`, you should always use `COPY`.
+
+For more information about ADD or COPY, see the following:
+
+- [Dockerfile reference for the ADD instruction](https://docs.docker.com/engine/reference/builder/#add)
+- [Dockerfile reference for the COPY instruction](https://docs.docker.com/engine/reference/builder/#copy)
+
+Reference: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.
+
+<a id="s2.12-add=or-copy"></a>
+
+## Other references: 
+<a id="s3-others"></a>
+
+### 2.13 EXPOSE
+The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. EXPOSE does not make the ports of the container accessible to the host.
+
+```
+FROM nginx:latest
+
+# Expose port 80 for HTTP traffic
+EXPOSE 80
+```
+In this example, the EXPOSE instruction is used to document that the containerized Nginx web server is expected to listen on port 80 for HTTP traffic. Users who want to connect to the running container can refer to the EXPOSE instruction to determine which ports should be accessed.
+
+To make the exposed ports accessible from the host machine, you need to publish them when running the container using the -p or -P option of the docker run command.
+
+For example, to publish port 80 of a container to port 8080 on the host machine:
+
+`docker run -p 8080:80 myimage`
+
+<a id="s3.1-expose"></a>
+
+### 2.14 ENTRYPOINT vs CMD vs RUN
+
+- ENTRYPOINT: The ENTRYPOINT instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use ENTRYPOINT in either the shell form (as a command string) or the exec form (as an array of strings).
+
+```
+FROM ubuntu:20.04
+
+# Set the entrypoint command as an array
+ENTRYPOINT ["echo", "Hello, World!"]
+```
+
+- CMD: The CMD instruction provides default arguments for the entrypoint command defined by ENTRYPOINT. It sets the default parameters or arguments that will be passed to the entrypoint command when the container starts. CMD can also be specified in either the shell form (as a command string) or the exec form (as an array of strings). If the CMD instruction is present in the Dockerfile, it will be overridden by any command line arguments passed to the docker run command when starting the container.
+
+```
+FROM ubuntu:20.04
+
+# Set the entrypoint command as an array
+ENTRYPOINT ["echo"]
+
+# Set the default argument for the entrypoint command
+CMD ["Hello, World!"]
+```
+
+- RUN: The RUN instruction is used to execute commands during the build process of the Docker image. It runs commands within the image's file system and creates a new layer with the changes made by the commands. RUN is typically used for installing dependencies, configuring the environment, or performing any actions needed to set up the image for runtime. Each RUN instruction creates a new layer in the Docker image, and the changes made by the command are preserved in that layer.
+
+```
+FROM ubuntu:20.04
+
+# Run a command during the build process
+RUN apt-get update && apt-get install -y curl
+```
+
+More on ENTRYPOINT:
+In Docker, the ENTRYPOINT instruction is used in a Dockerfile to specify the primary command that should be run when a container is started from the image. It sets the executable that will be invoked by default when the container is run as an executable.
+
+Shell form: 
+```
+FROM ubuntu:20.04
+ENTRYPOINT echo "Hello, World!"
+```
+
+Exec form: 
+```
+FROM ubuntu:20.04
+ENTRYPOINT ["/bin/echo", "Hello, World!"]
+```
+
+In the shell form, the ENTRYPOINT instruction is specified as a command string. This command string is interpreted as a shell command, allowing for shell processing, variable substitution, and other shell features.
+
+In the exec form, the ENTRYPOINT instruction is specified as an array of strings. The first element of the array is the executable, and subsequent elements are passed as arguments to the executable.
+
+The ENTRYPOINT instruction provides a way to set a default command or executable for the container. Any additional parameters passed when running the container will be appended to the ENTRYPOINT command, allowing for flexibility and parameterization.
+
+In Python, here is how `ENTRYPOINT` can be used with `CMD`:
+```
+FROM python:3.9-slim-buster
+
+WORKDIR /app
+
+# Copy the Python application code
+COPY app.py .
+
+# Set the entrypoint command
+ENTRYPOINT ["python3"]
+
+# Set the default arguments for the entrypoint command
+CMD ["app.py"]
+```
+
+In this example, the Dockerfile starts with a Python base image (python:3.9-slim-buster) and sets the working directory to /app. The Python application code file (app.py) is then copied into the image.
+
+The ENTRYPOINT instruction specifies the command that will be executed when the container starts. In this case, it sets the command to python3, which is the Python interpreter.
+
+The CMD instruction provides default arguments to the ENTRYPOINT command. In this case, the default argument is app.py, representing the Python script that will be executed.
+
+When you build and run the container, the Python application specified by app.py will be executed as the primary command. However, if you provide additional arguments when running the container, they will override the default arguments specified by CMD.
+
+<a id="s3.2-entrypoint-cmd-run"></a>
+
+## 4 Good demo
 
 <a id="s3-good-demo"></a>
 
@@ -530,18 +676,19 @@ In this example, we follow several best practices:
 
 ---
 
-## 4 Contributing guide
+## 5 Contributing guide
 
 [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
-<a id="s4-contributing-guide"></a>
+<a id="s5-contributing-guide"></a>
 
-## 5 References: 
+## 6 References: 
 - https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 - https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
 - https://google.github.io/styleguide/pyguide.html
 - https://github.com/dnaprawa/dockerfile-best-practices
+- https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d
 
-<a id="s5-references"></a>
+<a id="s6-references"></a>
 
 
