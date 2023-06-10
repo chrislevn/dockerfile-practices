@@ -64,31 +64,72 @@ No:
 In this bad example, each RUN instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
 
 ```
-FROM ubuntu:20.04
+Yes:
+  FROM ubuntu:20.04
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y curl
+  # Install system dependencies
+  RUN apt-get update && \
+      apt-get install -y curl
 
-# Install application dependencies
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get install -y nodejs
+  # Install application dependencies
+  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+      apt-get install -y nodejs
 
-# Set working directory
-WORKDIR /app
+  # Set working directory
+  WORKDIR /app
 
-# Copy only package.json and package-lock.json
-COPY package.json package-lock.json /app/
+  # Copy only package.json and package-lock.json
+  COPY package.json package-lock.json /app/
 
-# Install dependencies
-RUN npm install
+  # Install dependencies
+  RUN npm install
 
-# Copy the rest of the application files
-COPY . /app
+  # Copy the rest of the application files
+  COPY . /app
 
-# Build the application
-RUN npm run build
+  # Build the application
+  RUN npm run build
 ```
 In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
 
 
+4. Consolidate related operations
+Minimize the number of layers by combining related operations into a single instruction. For example, instead of installing multiple packages in separate RUN instructions, group them together using a single RUN instruction.
+
+```
+No:
+  FROM ubuntu:20.04
+
+  # Install dependencies
+  RUN apt-get update && \
+      apt-get install -y curl
+
+  # Install Node.js
+  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+      apt-get install -y nodejs
+
+  # Install project dependencies
+  RUN npm install express
+  RUN npm install lodash
+  RUN npm install axios
+
+```
+In this bad example, each package installation is done in a separate RUN instruction. This approach creates unnecessary layers and increases the number of cache invalidations. Even if one package changes, all subsequent package installations will be repeated during each build, leading to slower build times.
+
+```
+Yes: 
+  FROM ubuntu:20.04
+
+  # Install dependencies and Node.js
+  RUN apt-get update && \
+      apt-get install -y \
+          curl \
+          nodejs
+
+  # Install project dependencies
+  RUN npm install express lodash axios
+```
+In this improved example, related package installations are consolidated into a single RUN instruction. This approach reduces the number of layers and improves layer caching. If no changes occur in the package.json file, Docker can reuse the previously cached layer for the npm install step, resulting in faster builds.
+
+
+5. 
