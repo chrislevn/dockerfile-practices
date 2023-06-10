@@ -55,10 +55,12 @@ This guide is a list of practices I have collected, while learning Docker, for b
 ### 2.1 Use minimal base images
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
+
 ```Dockerfile
 No: 
   FROM python:3.9
 ```
+
 ```Dockerfile
 Yes:
   FROM python:3.9-slim
@@ -86,6 +88,7 @@ Use explicit tags for the base image instead of generic ones like 'latest' to en
 No: 
   FROM company/image_name:latest
 ```
+
 ```Dockerfile
 Yes:
   FROM company/image_name:version
@@ -117,6 +120,7 @@ No:
       npm run build
 
 ```
+
 In this bad example, each `RUN` instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
 
 ```Dockerfile
@@ -146,6 +150,7 @@ Yes:
   # Build the application
   RUN npm run build
 ```
+
 In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
 
 <a id="s2.3-leverage-layer-caching"></a>
@@ -172,6 +177,7 @@ No:
   RUN npm install axios
 
 ```
+
 In this bad example, each package installation is done in a separate `RUN` instruction. This approach creates unnecessary layers and increases the number of cache invalidations. Even if one package changes, all subsequent package installations will be repeated during each build, leading to slower build times.
 
 ```Dockerfile
@@ -187,6 +193,7 @@ Yes:
   # Install project dependencies
   RUN npm install express lodash axios
 ```
+
 In this improved example, related package installations are consolidated into a single RUN instruction. This approach reduces the number of layers and improves layer caching. If no changes occur in the package.json file, Docker can reuse the previously cached layer for the npm install step, resulting in faster builds.
 
 <a id="s2.4-consolidate-related-operations"></a>
@@ -234,13 +241,22 @@ In Python, avoid using `pip freeze > requirements.txt` to generate libaries as i
 
 Solutions: 
 - Use `pipreqs`: pipreqs starts by scanning all the python files (.py) in your project, then generates the requirements.txt file based on the import statements in each python file of the project. 
-`pip install pipreqs`
-`pipreqs /<your_project_root_path>/`
+
+```console
+pip install pipreqs
+```
+
+```console
+pipreqs /<your_project_root_path>/
+```
 
 Sometimes you might want to update the requirement file. In this case, you need to use the --forceoption to force the regeneration of the file.
-`pipreqs --force /<your_project_root_path>/`
 
-- `cat requirements.txt | xargs -n 1 pip install`
+```console
+pipreqs --force /<your_project_root_path>/
+```
+
+- ```cat requirements.txt | xargs -n 1 pip install```
 <br/>
 Note: -a parameter is not available under MacOS, so old cat is more portable.
 Reference: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt
@@ -392,6 +408,7 @@ No:
   # Run the application
   CMD ["python3", "app.py"]
 ```
+
 In this example, there is no explicit documentation or comments to explain the purpose or functionality of each instruction in the Dockerfile. It can make it challenging for other developers or maintainers to understand the intended usage or any specific requirements.
 
 ```Dockerfile
@@ -410,7 +427,8 @@ Yes:
   # Set the entrypoint command to run the application
   CMD ["python3", "app.py"]
 
-  # Expose port 8000 for accessing the application
+  # 
+  port 8000 for accessing the application
   EXPOSE 8000
 
   # Document the purpose of the image and any additional details
@@ -441,6 +459,7 @@ No:
   # Build the application
   RUN make build
 ```
+
 In this example, all files in the current directory are copied into the image, including unnecessary files such as development tools, build artifacts, or sensitive information. This can bloat the image size and potentially expose unwanted or sensitive files to the container.
 
 ```Dockerfile
@@ -524,6 +543,7 @@ COPY . /tmp/
 Results in fewer cache invalidations for the `RUN` step, than if you put the `COPY . /tmp/` before it.
 
 Because image size matters, using `ADD` to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead. That way you can delete the files you no longer need after they’ve been extracted and you don’t have to add another layer in your image. For example, you should avoid doing things like:
+
 ```Dockerfile
 No:
   ADD https://example.com/big.tar.xz /usr/src/things/
@@ -532,6 +552,7 @@ No:
 ```
 
 And instead, do something like:
+
 ```Dockerfile
 Yes: 
    RUN mkdir -p /usr/src/things \
@@ -539,6 +560,7 @@ Yes:
     | tar -xJC /usr/src/things \
     && make -C /usr/src/things all
 ```
+
 For other items, like files and directories, that don’t require the tar auto-extraction capability of  `ADD`, you should always use `COPY`.
 
 For more information about ADD or COPY, see the following:
@@ -562,6 +584,7 @@ FROM nginx:latest
 # Expose port 80 for HTTP traffic
 EXPOSE 80
 ```
+
 In this example, the EXPOSE instruction is used to document that the containerized Nginx web server is expected to listen on port 80 for HTTP traffic. Users who want to connect to the running container can refer to the EXPOSE instruction to determine which ports should be accessed.
 
 To make the exposed ports accessible from the host machine, you need to publish them when running the container using the -p or -P option of the docker run command.
@@ -610,12 +633,14 @@ More on ENTRYPOINT:
 In Docker, the ENTRYPOINT instruction is used in a Dockerfile to specify the primary command that should be run when a container is started from the image. It sets the executable that will be invoked by default when the container is run as an executable.
 
 Shell form: 
+
 ```Dockerfile
 FROM ubuntu:20.04
 ENTRYPOINT echo "Hello, World!"
 ```
 
 Exec form: 
+
 ```Dockerfile
 FROM ubuntu:20.04
 ENTRYPOINT ["/bin/echo", "Hello, World!"]
@@ -628,6 +653,7 @@ In the exec form, the ENTRYPOINT instruction is specified as an array of strings
 The ENTRYPOINT instruction provides a way to set a default command or executable for the container. Any additional parameters passed when running the container will be appended to the ENTRYPOINT command, allowing for flexibility and parameterization.
 
 In Python, here is how `ENTRYPOINT` can be used with `CMD`:
+
 ```Dockerfile
 FROM python:3.9-slim-buster
 
@@ -742,6 +768,7 @@ docker run -it myapp:1.0
 This command starts a container based on the myapp:1.0 image. `-it` is short for `--interactive` + `--tty`. When you docker run with this command it takes you straight inside the container.
 
 Note: If your application requires ports to be exposed, you can use the -p option to map container ports to host ports. For example, to expose port `8000`:
+
 ```console
 docker run -it -p 8000:8000 myapp:1.0
 ```
