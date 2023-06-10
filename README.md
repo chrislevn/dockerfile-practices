@@ -802,13 +802,13 @@ docker run -it -p 8000:8000 myapp:1.0
 <a id="s6-contributing-guide"></a>
 
 ## 7 References: 
-- https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-- https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
-- https://google.github.io/styleguide/pyguide.html
-- https://github.com/dnaprawa/dockerfile-best-practices
-- https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d
-- https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62
-- https://www.knowledgehut.com/blog/devops/docker-vs-container
+- [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+- [https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4](https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4)
+- [https://google.github.io/styleguide/pyguide.html](https://google.github.io/styleguide/pyguide.html)
+- [https://github.com/dnaprawa/dockerfile-best-practices](https://github.com/dnaprawa/dockerfile-best-practices)
+- [https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d](https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d)
+- [https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62](https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62)
+- [https://www.knowledgehut.com/blog/devops/docker-vs-container](https://www.knowledgehut.com/blog/devops/docker-vs-container)
 
 <a id="s7-references"></a>
 
