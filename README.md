@@ -45,7 +45,7 @@ Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/c
 ## 1 Background
 Docker is an open-source platform that enables you to automate the deployment, scaling, and management of applications using containerization. It provides a way to package applications and their dependencies into a standardized unit called a container. 
 
-This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. 
+This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. If you have new tips, feel free to contribute via [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md). Hope this helps!
 
 <a id="s1-background"></a>
 
