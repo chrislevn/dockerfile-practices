@@ -532,6 +532,8 @@ In this example, we follow several best practices:
 
 ## 4 Contributing guide
 
+[Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
+
 <a id="s4-contributing-guide"></a>
 
 ## 5 References: 
