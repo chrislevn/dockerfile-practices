@@ -55,11 +55,11 @@ This guide is a list of practices I have collected, while learning Docker, for b
 ### 2.1 Use minimal base images
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
-```
+```Dockerfile
 No: 
   FROM python:3.9
 ```
-```
+```Dockerfile
 Yes:
   FROM python:3.9-slim
 ```
@@ -82,11 +82,11 @@ References:
 ### 2.2 Use explicit tags for the base image.
 Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
  
- ```
+ ```Dockerfile
 No: 
   FROM company/image_name:latest
 ```
-```
+```Dockerfile
 Yes:
   FROM company/image_name:version
 ```
@@ -96,7 +96,7 @@ Yes:
 ### 2.3 Leverage layer caching
 Docker builds images using a layered approach, and it caches each layer. Place the instructions that change less frequently towards the top of the Dockerfile. This allows Docker to reuse cached layers during subsequent builds, speeding up the build process.
 
-```
+```Dockerfile
 No:
   FROM ubuntu:20.04
 
@@ -119,7 +119,7 @@ No:
 ```
 In this bad example, each `RUN` instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
 
-```
+```Dockerfile
 Yes:
   FROM ubuntu:20.04
 
@@ -154,7 +154,7 @@ In this improved example, we take advantage of layer caching by separating the s
 ### 2.4 Consolidate related operations
 Minimize the number of layers by combining related operations into a single instruction. For example, instead of installing multiple packages in separate `RUN` instructions, group them together using a single RUN instruction.
 
-```
+```Dockerfile
 No:
   FROM ubuntu:20.04
 
@@ -174,7 +174,7 @@ No:
 ```
 In this bad example, each package installation is done in a separate `RUN` instruction. This approach creates unnecessary layers and increases the number of cache invalidations. Even if one package changes, all subsequent package installations will be repeated during each build, leading to slower build times.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -194,7 +194,7 @@ In this improved example, related package installations are consolidated into a 
 ### 2.5 Remove unnecessary artifacts
 Clean up any unnecessary artifacts created during the build process to reduce the size of the final image. For example, remove temporary files, unused dependencies, and package caches.
 
-```
+```Dockerfile
 No:
   FROM ubuntu:20.04
 
@@ -214,7 +214,7 @@ No:
 
 In this example, the unnecessary artifacts, such as the downloaded app.tar.gz file, are removed in a separate RUN instruction. However, this approach doesn't take advantage of Docker's layer caching. Even if no changes are made to the downloaded package, Docker will not be able to reuse the cached layer and will repeat the download, extraction, and removal steps during each build.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -250,7 +250,7 @@ Reference: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on
 ### 2.6 Use specific COPY instructions
 When copying files into the image, be specific about what you're copying. Avoid using . (dot) as the source directory, as it can inadvertently include unwanted files. Instead, explicitly specify the files or directories you need.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -260,7 +260,7 @@ No:
 
 In this example, the entire context directory, represented by . (dot), is copied into the image. This approach can inadvertently include unwanted files that may not be necessary for the application. It can bloat the image size and potentially expose sensitive files or credentials to the container.
 
-```
+```Dockerfile
 Yes:  
   FROM ubuntu:20.04
 
@@ -279,7 +279,7 @@ In this improved example, specific files (app.py and requirements.txt) are copie
 ### 2.7 Set the correct container user 
 By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the USER instruction.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -298,7 +298,7 @@ No:
 
 In this example, the container user is set to root using the USER instruction. Running the container as the root user can pose security risks, as any malicious code or vulnerability exploited within the container would have elevated privileges.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -328,7 +328,7 @@ In this improved example, a dedicated non-root user (myuser) is created using th
 ### 2.8 Use environment variables for configuration
 Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -347,7 +347,7 @@ In this example, configuration values are directly set as environment variables 
 - Configuration values are hardcoded in the Dockerfile, making it less flexible and harder to change without modifying the file itself.
 - Sensitive information, such as passwords or API keys, is exposed in plain text in the Dockerfile, which is not secure.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -367,14 +367,16 @@ To securely provide sensitive configuration values, you can pass them as environ
 
 For example, when running the container, you can override the default values:
 
-```docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage```
+```console
+docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage
+```
 
 <a id="s2.8-use-environment-variables-for-configuration"></a>
 
 ### 2.9 Document your Dockerfile
 Include comments in your Dockerfile to provide context and explanations for the various instructions. This helps other developers understand the purpose and functionality of the Dockerfile.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -392,7 +394,7 @@ No:
 ```
 In this example, there is no explicit documentation or comments to explain the purpose or functionality of each instruction in the Dockerfile. It can make it challenging for other developers or maintainers to understand the intended usage or any specific requirements.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -429,7 +431,7 @@ In this improved example, the Dockerfile is better documented:
 The .dockerignore file allow you to exclude files the context like a .gitignore file allow you to exclude files from your git repository.
 It helps to make build faster and lighter by excluding from the context big files or repository that are not used in the build.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -441,7 +443,7 @@ No:
 ```
 In this example, all files in the current directory are copied into the image, including unnecessary files such as development tools, build artifacts, or sensitive information. This can bloat the image size and potentially expose unwanted or sensitive files to the container.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -469,7 +471,7 @@ The `.dockerignore` file in this example excludes the `.git` directory, the `nod
 ### 2.11 Test your image
 After building your Docker image, run it in a container to verify that everything works as expected. This ensures that your image is functional and can be used with confidence.
 
-```
+```Dockerfile
 No: 
   FROM ubuntu:20.04
 
@@ -485,7 +487,7 @@ No:
 
 In this example, there is no explicit provision for testing the image. The Dockerfile only focuses on setting up the application, without any dedicated steps or considerations for running tests.
 
-```
+```Dockerfile
 Yes: 
   FROM ubuntu:20.04
 
@@ -513,7 +515,7 @@ Although `ADD` and `COPY` are functionally similar, generally speaking, `COPY` i
 
 If you have multiple Dockerfile steps that use different files from your context, `COPY` them individually, rather than all at once. This ensures that each step’s build cache is only invalidated, forcing the step to be re-run if the specifically required files change.
 
-```
+```Dockerfile
 COPY requirements.txt /tmp/
 RUN pip install --requirement /tmp/requirements.txt
 COPY . /tmp/
@@ -522,7 +524,7 @@ COPY . /tmp/
 Results in fewer cache invalidations for the `RUN` step, than if you put the `COPY . /tmp/` before it.
 
 Because image size matters, using `ADD` to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead. That way you can delete the files you no longer need after they’ve been extracted and you don’t have to add another layer in your image. For example, you should avoid doing things like:
-```
+```Dockerfile
 No:
   ADD https://example.com/big.tar.xz /usr/src/things/
   RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
@@ -530,7 +532,7 @@ No:
 ```
 
 And instead, do something like:
-```
+```Dockerfile
 Yes: 
    RUN mkdir -p /usr/src/things \
     && curl -SL https://example.com/big.tar.xz \
@@ -554,7 +556,7 @@ Reference: https://docs.docker.com/develop/develop-images/dockerfile_best-practi
 ### 3.1 EXPOSE
 The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. EXPOSE does not make the ports of the container accessible to the host.
 
-```
+```Dockerfile
 FROM nginx:latest
 
 # Expose port 80 for HTTP traffic
@@ -566,7 +568,9 @@ To make the exposed ports accessible from the host machine, you need to publish 
 
 For example, to publish port 80 of a container to port 8080 on the host machine:
 
-`docker run -p 8080:80 myimage`
+```console
+docker run -p 8080:80 myimage
+```
 
 <a id="s3.1-expose"></a>
 
@@ -574,7 +578,7 @@ For example, to publish port 80 of a container to port 8080 on the host machine:
 
 - ENTRYPOINT: The ENTRYPOINT instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use ENTRYPOINT in either the shell form (as a command string) or the exec form (as an array of strings).
 
-```
+```Dockerfile
 FROM ubuntu:20.04
 
 # Set the entrypoint command as an array
@@ -583,7 +587,7 @@ ENTRYPOINT ["echo", "Hello, World!"]
 
 - CMD: The CMD instruction provides default arguments for the entrypoint command defined by ENTRYPOINT. It sets the default parameters or arguments that will be passed to the entrypoint command when the container starts. CMD can also be specified in either the shell form (as a command string) or the exec form (as an array of strings). If the CMD instruction is present in the Dockerfile, it will be overridden by any command line arguments passed to the docker run command when starting the container.
 
-```
+```Dockerfile
 FROM ubuntu:20.04
 
 # Set the entrypoint command as an array
@@ -595,7 +599,7 @@ CMD ["Hello, World!"]
 
 - RUN: The RUN instruction is used to execute commands during the build process of the Docker image. It runs commands within the image's file system and creates a new layer with the changes made by the commands. RUN is typically used for installing dependencies, configuring the environment, or performing any actions needed to set up the image for runtime. Each RUN instruction creates a new layer in the Docker image, and the changes made by the command are preserved in that layer.
 
-```
+```Dockerfile
 FROM ubuntu:20.04
 
 # Run a command during the build process
@@ -606,13 +610,13 @@ More on ENTRYPOINT:
 In Docker, the ENTRYPOINT instruction is used in a Dockerfile to specify the primary command that should be run when a container is started from the image. It sets the executable that will be invoked by default when the container is run as an executable.
 
 Shell form: 
-```
+```Dockerfile
 FROM ubuntu:20.04
 ENTRYPOINT echo "Hello, World!"
 ```
 
 Exec form: 
-```
+```Dockerfile
 FROM ubuntu:20.04
 ENTRYPOINT ["/bin/echo", "Hello, World!"]
 ```
@@ -624,7 +628,7 @@ In the exec form, the ENTRYPOINT instruction is specified as an array of strings
 The ENTRYPOINT instruction provides a way to set a default command or executable for the container. Any additional parameters passed when running the container will be appended to the ENTRYPOINT command, allowing for flexibility and parameterization.
 
 In Python, here is how `ENTRYPOINT` can be used with `CMD`:
-```
+```Dockerfile
 FROM python:3.9-slim-buster
 
 WORKDIR /app
@@ -673,7 +677,7 @@ Reference: https://www.knowledgehut.com/blog/devops/docker-vs-container
 
 ## 4 Good demo
 
-```
+```Dockerfile
 # Use a suitable base image
 FROM python:3.9-slim-buster
 
@@ -723,18 +727,24 @@ In this example, we follow several best practices:
 - Open a terminal or command prompt and navigate to the directory where your Dockerfile is located.
 - Build the Docker image using the `docker build` command. Provide a tag for your image using the `-t` option. For example:
 
-`docker build -t myapp:1.0 .`
+```console
+docker build -t myapp:1.0 .
+```
 
 This command builds an image with the tag `myapp:1.0` using the Dockerfile in the current directory (`.`).
 
 Once the image is built, you can run a container based on that image using the docker run command. Specify the image name or tag with the -it option for an interactive session. For example:
 
-`docker run -it myapp:1.0`
+```console
+docker run -it myapp:1.0
+```
 
 This command starts a container based on the myapp:1.0 image. `-it` is short for `--interactive` + `--tty`. When you docker run with this command it takes you straight inside the container.
 
 Note: If your application requires ports to be exposed, you can use the -p option to map container ports to host ports. For example, to expose port `8000`:
-`docker run -it -p 8000:8000 myapp:1.0`
+```console
+docker run -it -p 8000:8000 myapp:1.0
+```
 
 <a id="s5-run-with-docker-cli"></a>
 ---
