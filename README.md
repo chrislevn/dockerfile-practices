@@ -76,7 +76,6 @@ Base image types:
 References: 
 - https://medium.com/swlh/alpine-slim-stretch-buster-jessie-bullseye-bookworm-what-are-the-differences-in-docker-62171ed4531d
   
-</details>
 
 <a id="s2.1-minimal-base-image"></a>
 
