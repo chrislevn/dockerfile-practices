@@ -6,9 +6,9 @@ See README.md for details.
 
 # Good practices on writing Dockerfile
 
-Website: https://chrislevn.github.io/dockerfile-practices/
+Website: [https://chrislevn.github.io/dockerfile-practices/](https://chrislevn.github.io/dockerfile-practices/)
 <br/>
-Github: https://github.com/chrislevn/dockerfile-practices
+Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/chrislevn/dockerfile-practices)
 
 <!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
 
