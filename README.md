@@ -8,7 +8,7 @@ No:
   FROM python:3.9
 ```
 ```
-YES:
+Yes:
   FROM python:3.9-slim
 ```
 <details>
@@ -33,7 +33,62 @@ No:
   FROM company/image_name:latest
 ```
 ```
-YES:
+Yes:
   FROM company/image_name:version
 ```
+
+3. Leverage layer caching
+Docker builds images using a layered approach, and it caches each layer. Place the instructions that change less frequently towards the top of the Dockerfile. This allows Docker to reuse cached layers during subsequent builds, speeding up the build process.
+
+```
+No:
+  FROM ubuntu:20.04
+
+  # Install system dependencies
+  RUN apt-get update && \
+      apt-get install -y curl
+
+  # Install application dependencies
+  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+      apt-get install -y nodejs
+
+  # Copy application files
+  COPY . /app
+
+  # Build the application
+  RUN cd /app && \
+      npm install && \
+      npm run build
+
+```
+In this bad example, each RUN instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
+
+```
+FROM ubuntu:20.04
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y curl
+
+# Install application dependencies
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy only package.json and package-lock.json
+COPY package.json package-lock.json /app/
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application files
+COPY . /app
+
+# Build the application
+RUN npm run build
+```
+In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
+
 
