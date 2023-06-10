@@ -56,14 +56,16 @@ This guide is a list of practices I have collected, while learning Docker, for b
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
 
-```Dockerfile
-No: 
-  FROM python:3.9
+No:
+
+```Dockerfile 
+FROM python:3.9
 ```
 
-```Dockerfile
 Yes:
-  FROM python:3.9-slim
+
+```Dockerfile
+FROM python:3.9-slim
 ```
 
 Base image types: 
@@ -81,14 +83,16 @@ References:
 ### 2.2 Use explicit tags for the base image.
 Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
  
+ No: 
+ 
  ```Dockerfile
-No: 
-  FROM company/image_name:latest
+FROM company/image_name:latest
 ```
 
-```Dockerfile
 Yes:
-  FROM company/image_name:version
+
+```Dockerfile
+FROM company/image_name:version
 ```
 
 <a id="s2.2-base-image-explicit-tags"></a>
@@ -96,56 +100,58 @@ Yes:
 ### 2.3 Leverage layer caching
 Docker builds images using a layered approach, and it caches each layer. Place the instructions that change less frequently towards the top of the Dockerfile. This allows Docker to reuse cached layers during subsequent builds, speeding up the build process.
 
-```Dockerfile
 No:
-  FROM ubuntu:20.04
 
-  # Install system dependencies
-  RUN apt-get update && \
-      apt-get install -y curl
+```Dockerfile
+FROM ubuntu:20.04
 
-  # Install application dependencies
-  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-      apt-get install -y nodejs
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y curl
 
-  # Copy application files
-  COPY . /app
+# Install application dependencies
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs
 
-  # Build the application
-  RUN cd /app && \
-      npm install && \
-      npm run build
+# Copy application files
+COPY . /app
+
+# Build the application
+RUN cd /app && \
+    npm install && \
+    npm run build
 
 ```
 
-In this bad example, each `RUN` instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
+In this example, each `RUN` instruction creates a new layer, making it difficult to leverage layer caching effectively. Even if there are no changes to the application code, every step from installing system dependencies to building the application will be repeated during each build, resulting in slower build times.
+
+Yes: 
 
 ```Dockerfile
-Yes:
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Install system dependencies
-  RUN apt-get update && \
-      apt-get install -y curl
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y curl
 
-  # Install application dependencies
-  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-      apt-get install -y nodejs
+# Install application dependencies
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs
 
-  # Set working directory
-  WORKDIR /app
+# Set working directory
+WORKDIR /app
 
-  # Copy only package.json and package-lock.json
-  COPY package.json package-lock.json /app/
+# Copy only package.json and package-lock.json
+COPY package.json package-lock.json /app/
 
-  # Install dependencies
-  RUN npm install
+# Install dependencies
+RUN npm install
 
-  # Copy the rest of the application files
-  COPY . /app
+# Copy the rest of the application files
+COPY . /app
 
-  # Build the application
-  RUN npm run build
+# Build the application
+RUN npm run build
 ```
 
 In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
@@ -156,39 +162,41 @@ In this improved example, we take advantage of layer caching by separating the s
 ### 2.4 Consolidate related operations
 Minimize the number of layers by combining related operations into a single instruction. For example, instead of installing multiple packages in separate `RUN` instructions, group them together using a single RUN instruction.
 
-```Dockerfile
 No:
-  FROM ubuntu:20.04
 
-  # Install dependencies
-  RUN apt-get update && \
-      apt-get install -y curl
+```Dockerfile
+FROM ubuntu:20.04
 
-  # Install Node.js
-  RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-      apt-get install -y nodejs
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl
 
-  # Install project dependencies
-  RUN npm install express
-  RUN npm install lodash
-  RUN npm install axios
+# Install Node.js
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs
+
+# Install project dependencies
+RUN npm install express
+RUN npm install lodash
+RUN npm install axios
 
 ```
 
-In this bad example, each package installation is done in a separate `RUN` instruction. This approach creates unnecessary layers and increases the number of cache invalidations. Even if one package changes, all subsequent package installations will be repeated during each build, leading to slower build times.
+In this example, each package installation is done in a separate `RUN` instruction. This approach creates unnecessary layers and increases the number of cache invalidations. Even if one package changes, all subsequent package installations will be repeated during each build, leading to slower build times.
+
+Yes:
 
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Install dependencies and Node.js
-  RUN apt-get update && \
-      apt-get install -y \
-          curl \
-          nodejs
+# Install dependencies and Node.js
+RUN apt-get update && \
+    apt-get install -y \
+        curl \
+        nodejs
 
-  # Install project dependencies
-  RUN npm install express lodash axios
+# Install project dependencies
+RUN npm install express lodash axios
 ```
 
 In this improved example, related package installations are consolidated into a single RUN instruction. This approach reduces the number of layers and improves layer caching. If no changes occur in the package.json file, Docker can reuse the previously cached layer for the npm install step, resulting in faster builds.
@@ -198,38 +206,40 @@ In this improved example, related package installations are consolidated into a 
 ### 2.5 Remove unnecessary artifacts
 Clean up any unnecessary artifacts created during the build process to reduce the size of the final image. For example, remove temporary files, unused dependencies, and package caches.
 
-```Dockerfile
 No:
-  FROM ubuntu:20.04
 
-  # Install dependencies
-  RUN apt-get update && \
-      apt-get install -y curl
+```Dockerfile
+FROM ubuntu:20.04
 
-  # Download application package
-  RUN curl -O https://example.com/app.tar.gz
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl
 
-  # Extract application package
-  RUN tar -xzf app.tar.gz
+# Download application package
+RUN curl -O https://example.com/app.tar.gz
 
-  # Remove unnecessary artifacts
-  RUN rm app.tar.gz
+# Extract application package
+RUN tar -xzf app.tar.gz
+
+# Remove unnecessary artifacts
+RUN rm app.tar.gz
 ```
 
 In this example, the unnecessary artifacts, such as the downloaded app.tar.gz file, are removed in a separate RUN instruction. However, this approach doesn't take advantage of Docker's layer caching. Even if no changes are made to the downloaded package, Docker will not be able to reuse the cached layer and will repeat the download, extraction, and removal steps during each build.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Install dependencies
-  RUN apt-get update && \
-      apt-get install -y curl
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl
 
-  # Download and extract application package, then remove unnecessary artifacts
-  RUN curl -O https://example.com/app.tar.gz \
-      && tar -xzf app.tar.gz \
-      && rm app.tar.gz
+# Download and extract application package, then remove unnecessary artifacts
+RUN curl -O https://example.com/app.tar.gz \
+    && tar -xzf app.tar.gz \
+    && rm app.tar.gz
 ```
 
 In this improved example, the unnecessary artifacts are removed immediately after they are no longer needed, within the same `RUN` instruction. By doing so, Docker can leverage layer caching effectively. If the downloaded package remains unchanged, Docker can reuse the cached layer, avoiding redundant downloads and extractions.
@@ -263,12 +273,13 @@ Reference: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on
 ### 2.6 Use specific COPY instructions
 When copying files into the image, be specific about what you're copying. Avoid using . (dot) as the source directory, as it can inadvertently include unwanted files. Instead, explicitly specify the files or directories you need.
 
-```Dockerfile
-No: 
-  FROM ubuntu:20.04
+No:
 
-  # Copy all files into the image
-  COPY . /app
+```Dockerfile
+FROM ubuntu:20.04
+
+# Copy all files into the image
+COPY . /app
 ```
 
 In this example, the entire context directory, represented by . (dot), is copied into the image. This approach can inadvertently include unwanted files that may not be necessary for the application. It can bloat the image size and potentially expose sensitive files or credentials to the container.
@@ -292,46 +303,48 @@ In this improved example, specific files (app.py and requirements.txt) are copie
 ### 2.7 Set the correct container user 
 By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the USER instruction.
 
+No:
+
 ```Dockerfile
-No: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Set working directory
-  WORKDIR /app
+# Set working directory
+WORKDIR /app
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Set container user as root
-  USER root
+# Set container user as root
+USER root
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this example, the container user is set to root using the USER instruction. Running the container as the root user can pose security risks, as any malicious code or vulnerability exploited within the container would have elevated privileges.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Set working directory
-  WORKDIR /app
+# Set working directory
+WORKDIR /app
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Create a non-root user
-  RUN groupadd -r myuser && useradd -r -g myuser myuser
+# Create a non-root user
+RUN groupadd -r myuser && useradd -r -g myuser myuser
 
-  # Set ownership and permissions
-  RUN chown -R myuser:myuser /app
+# Set ownership and permissions
+RUN chown -R myuser:myuser /app
 
-  # Switch to the non-root user
-  USER myuser
+# Switch to the non-root user
+USER myuser
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this improved example, a dedicated non-root user (myuser) is created using the useradd and groupadd commands. The ownership and permissions of the /app directory are changed to the non-root user using chown. Finally, the USER instruction switches to the non-root user before running the application.
@@ -341,18 +354,18 @@ In this improved example, a dedicated non-root user (myuser) is created using th
 ### 2.8 Use environment variables for configuration
 Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
 
+No:
 ```Dockerfile
-No: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Set configuration values directly
-  ENV DB_HOST=localhost
-  ENV DB_PORT=3306
-  ENV DB_USER=myuser
-  ENV DB_PASSWORD=mypassword
+# Set configuration values directly
+ENV DB_HOST=localhost
+ENV DB_PORT=3306
+ENV DB_USER=myuser
+ENV DB_PASSWORD=mypassword
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this example, configuration values are directly set as environment variables using the ENV instruction in the Dockerfile. This approach has a few drawbacks:
@@ -360,18 +373,19 @@ In this example, configuration values are directly set as environment variables 
 - Configuration values are hardcoded in the Dockerfile, making it less flexible and harder to change without modifying the file itself.
 - Sensitive information, such as passwords or API keys, is exposed in plain text in the Dockerfile, which is not secure.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Set default configuration values
-  ENV DB_HOST=localhost
-  ENV DB_PORT=3306
-  ENV DB_USER=defaultuser
-  ENV DB_PASSWORD=defaultpassword
+# Set default configuration values
+ENV DB_HOST=localhost
+ENV DB_PORT=3306
+ENV DB_USER=defaultuser
+ENV DB_PASSWORD=defaultpassword
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this improved example, default configuration values are set as environment variables, but they are kept generic and non-sensitive. This approach provides a template for configuration that can be customized when running the container.
@@ -389,49 +403,51 @@ docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=
 ### 2.9 Document your Dockerfile
 Include comments in your Dockerfile to provide context and explanations for the various instructions. This helps other developers understand the purpose and functionality of the Dockerfile.
 
+No:
+
 ```Dockerfile
-No: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Install dependencies
-  RUN apt-get update && apt-get install -y python3
+# Install dependencies
+RUN apt-get update && apt-get install -y python3
 
-  # Set working directory
-  WORKDIR /app
+# Set working directory
+WORKDIR /app
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this example, there is no explicit documentation or comments to explain the purpose or functionality of each instruction in the Dockerfile. It can make it challenging for other developers or maintainers to understand the intended usage or any specific requirements.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Install Python
-  RUN apt-get update && apt-get install -y python3
+# Install Python
+RUN apt-get update && apt-get install -y python3
 
-  # Set working directory
-  WORKDIR /app
+# Set working directory
+WORKDIR /app
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Set the entrypoint command to run the application
-  CMD ["python3", "app.py"]
+# Set the entrypoint command to run the application
+CMD ["python3", "app.py"]
 
-  # 
-  port 8000 for accessing the application
-  EXPOSE 8000
+# 
+port 8000 for accessing the application
+EXPOSE 8000
 
-  # Document the purpose of the image and any additional details
-  LABEL maintainer="John Doe <john@example.com>"
-  LABEL description="Docker image for running the example application."
-  LABEL version="1.0"
+# Document the purpose of the image and any additional details
+LABEL maintainer="John Doe <john@example.com>"
+LABEL description="Docker image for running the example application."
+LABEL version="1.0"
 ```
 
 In this improved example, the Dockerfile is better documented:
@@ -446,31 +462,34 @@ In this improved example, the Dockerfile is better documented:
 The .dockerignore file allow you to exclude files the context like a .gitignore file allow you to exclude files from your git repository.
 It helps to make build faster and lighter by excluding from the context big files or repository that are not used in the build.
 
+No:
+
 ```Dockerfile
-No: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Copy all files into the image
-  COPY . /app
+# Copy all files into the image
+COPY . /app
 
-  # Build the application
-  RUN make build
+# Build the application
+RUN make build
 ```
 
 In this example, all files in the current directory are copied into the image, including unnecessary files such as development tools, build artifacts, or sensitive information. This can bloat the image size and potentially expose unwanted or sensitive files to the container.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Copy only necessary files into the image
-  COPY . /app
+# Copy only necessary files into the image
+COPY . /app
 
-  # Build the application
-  RUN make build
+# Build the application
+RUN make build
 ```
 
 .dockerignore:
+
 ```
 .git
 node_modules
@@ -487,37 +506,39 @@ The `.dockerignore` file in this example excludes the `.git` directory, the `nod
 ### 2.11 Test your image
 After building your Docker image, run it in a container to verify that everything works as expected. This ensures that your image is functional and can be used with confidence.
 
+No:
+
 ```Dockerfile
-No: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Install dependencies
-  RUN apt-get update && apt-get install -y python3
+# Install dependencies
+RUN apt-get update && apt-get install -y python3
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this example, there is no explicit provision for testing the image. The Dockerfile only focuses on setting up the application, without any dedicated steps or considerations for running tests.
 
+Yes:
+
 ```Dockerfile
-Yes: 
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Copy application files
-  COPY . /app
+# Copy application files
+COPY . /app
 
-  # Install dependencies
-  RUN apt-get update && apt-get install -y python3
+# Install dependencies
+RUN apt-get update && apt-get install -y python3
 
-  # Run tests
-  RUN python3 -m unittest discover tests
+# Run tests
+RUN python3 -m unittest discover tests
 
-  # Run the application
-  CMD ["python3", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
 ```
 
 In this improved example, a dedicated step is added to run tests within the Dockerfile. The `RUN` instruction executes the necessary command to run tests using a testing framework (in this case, `unittest` is used as an example). By including this step, you ensure that tests are executed during the Docker image build process.
@@ -541,21 +562,23 @@ Results in fewer cache invalidations for the `RUN` step, than if you put the `CO
 
 Because image size matters, using `ADD` to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead. That way you can delete the files you no longer need after they’ve been extracted and you don’t have to add another layer in your image. For example, you should avoid doing things like:
 
-```Dockerfile
 No:
-  ADD https://example.com/big.tar.xz /usr/src/things/
-  RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
-  RUN make -C /usr/src/things all
+
+```Dockerfile
+ADD https://example.com/big.tar.xz /usr/src/things/
+RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
+RUN make -C /usr/src/things all
 ```
 
 And instead, do something like:
 
+Yes:
+
 ```Dockerfile
-Yes: 
-   RUN mkdir -p /usr/src/things \
-    && curl -SL https://example.com/big.tar.xz \
-    | tar -xJC /usr/src/things \
-    && make -C /usr/src/things all
+ RUN mkdir -p /usr/src/things \
+  && curl -SL https://example.com/big.tar.xz \
+  | tar -xJC /usr/src/things \
+  && make -C /usr/src/things all
 ```
 
 For other items, like files and directories, that don’t require the tar auto-extraction capability of  `ADD`, you should always use `COPY`.
