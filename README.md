@@ -537,10 +537,10 @@ In this example, we follow several best practices:
 <a id="s4-contributing-guide"></a>
 
 ## 5 References: 
-https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
-https://google.github.io/styleguide/pyguide.html
-https://github.com/dnaprawa/dockerfile-best-practices
+- https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+- https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4
+- https://google.github.io/styleguide/pyguide.html
+- https://github.com/dnaprawa/dockerfile-best-practices
 
 <a id="s5-references"></a>
 
