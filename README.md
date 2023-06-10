@@ -1,7 +1,6 @@
 # Good practices on writing Dockerfile
-Good practices on writing Dockerfile
 
-1. **Use minimal base images**. 
+1. Use minimal base images
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
 ```
@@ -25,3 +24,16 @@ References:
 - https://medium.com/swlh/alpine-slim-stretch-buster-jessie-bullseye-bookworm-what-are-the-differences-in-docker-62171ed4531d
   
 </details>
+
+2. Use explicit tags for the base image. 
+ Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
+ 
+ ```
+No: 
+  FROM company/image_name:latest
+```
+```
+YES:
+  FROM company/image_name:version
+```
+
