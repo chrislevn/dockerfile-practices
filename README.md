@@ -5,22 +5,22 @@ https://chrislevn.github.io/dockerfile-practices/
 <details markdown="1"> 
   <summary>Table of Contents</summary>
   
-- [1 Background](#1-background)
-- [2. Dockerfile's practices](#2-dockerfile-practices)
-    * [2.1 Use minimal base images](#2.1-minimal-base-image)
-    * [2.2 Use explicit tags for the base image.](#2.2-base-image-explicit-tags)
-    * [2.3 Leverage layer caching](#2.3-leverage-layer-caching)
-    * [2.4 Consolidate related operations](#2.4-consolidate-related-operations)
-    * [2.5 Remove unnecessary artifacts](#2.5-remove-unnecessary-artifacts)
-    * [2.6 Use specific COPY instructions](#2.6-use-specific-copy-instructions)
-    * [2.7 Set the correct container user](#2.7-set-the-correct-container-user)
-    * [2.8 Use environment variables for configuration](#2.8-use-environment-variables-for-configuration)
-    * [2.9 Document your Dockerfile](#2.9-document-your-dockerfile)
-    * [2.10 Use .dockerignore file](#2.10-use-dockerignore)
-    * [2.11 Test your image](#2.11-test-your-image)
-- [3 Good demo](#3-good-demo)
-- [4 Contributing guide](#4-contributing-guide)
-- [5 References](#5-references)
+- [1 Background](#s1-background)
+- [2. Dockerfile's practices](#s2-dockerfile-practices)
+    * [2.1 Use minimal base images](#s2.1-minimal-base-image)
+    * [2.2 Use explicit tags for the base image.](#s2.2-base-image-explicit-tags)
+    * [2.3 Leverage layer caching](#s2.3-leverage-layer-caching)
+    * [2.4 Consolidate related operations](#s2.4-consolidate-related-operations)
+    * [2.5 Remove unnecessary artifacts](#s2.5-remove-unnecessary-artifacts)
+    * [2.6 Use specific COPY instructions](#s2.6-use-specific-copy-instructions)
+    * [2.7 Set the correct container user](#s2.7-set-the-correct-container-user)
+    * [2.8 Use environment variables for configuration](#s2.8-use-environment-variables-for-configuration)
+    * [2.9 Document your Dockerfile](#s2.9-document-your-dockerfile)
+    * [2.10 Use .dockerignore file](#s2.10-use-dockerignore)
+    * [2.11 Test your image](#s2.11-test-your-image)
+- [3 Good demo](#s3-good-demo)
+- [4 Contributing guide](#s4-contributing-guide)
+- [5 References](#s5-references)
  
 </details>
 
@@ -28,10 +28,10 @@ https://chrislevn.github.io/dockerfile-practices/
 
 ## 1 Background
 
-<a id="1-background"></a>
+<a id="s1-background"></a>
 
 ## 2 Dockerfile's practices
-<a id="2-dockerfile-practices"></a>
+<a id="s2-dockerfile-practices"></a>
 
 ### 2.1 Use minimal base images
 
@@ -58,7 +58,7 @@ References:
   
 </details>
 
-<a id="2.1-minimal-base-image"></a>
+<a id="s2.1-minimal-base-image"></a>
 
 ### 2.2 Use explicit tags for the base image.
 Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
@@ -72,7 +72,7 @@ Yes:
   FROM company/image_name:version
 ```
 
-<a id="2.2-base-image-explicit-tags"></a>
+<a id="s2.2-base-image-explicit-tags"></a>
 
 ### 2.3 Leverage layer caching
 Docker builds images using a layered approach, and it caches each layer. Place the instructions that change less frequently towards the top of the Dockerfile. This allows Docker to reuse cached layers during subsequent builds, speeding up the build process.
@@ -129,7 +129,7 @@ Yes:
 ```
 In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
 
-<a id="2.3-leverage-layer-caching"></a>
+<a id="s2.3-leverage-layer-caching"></a>
 
 
 ### 2.4 Consolidate related operations
@@ -170,7 +170,7 @@ Yes:
 ```
 In this improved example, related package installations are consolidated into a single RUN instruction. This approach reduces the number of layers and improves layer caching. If no changes occur in the package.json file, Docker can reuse the previously cached layer for the npm install step, resulting in faster builds.
 
-<a id="2.4-consolidate-related-operations"></a>
+<a id="s2.4-consolidate-related-operations"></a>
 
 ### 2.5 Remove unnecessary artifacts
 Clean up any unnecessary artifacts created during the build process to reduce the size of the final image. For example, remove temporary files, unused dependencies, and package caches.
@@ -211,7 +211,7 @@ Yes:
 
 In this improved example, the unnecessary artifacts are removed immediately after they are no longer needed, within the same `RUN` instruction. By doing so, Docker can leverage layer caching effectively. If the downloaded package remains unchanged, Docker can reuse the cached layer, avoiding redundant downloads and extractions.
 
-<a id="2.5-remove-unnecessary-artifacts"></a>
+<a id="s2.5-remove-unnecessary-artifacts"></a>
 
 ### 2.6 Use specific COPY instructions
 When copying files into the image, be specific about what you're copying. Avoid using . (dot) as the source directory, as it can inadvertently include unwanted files. Instead, explicitly specify the files or directories you need.
@@ -240,7 +240,7 @@ Yes:
 
 In this improved example, specific files (app.py and requirements.txt) are copied into a designated directory (/app). By explicitly specifying the required files, you ensure that only the necessary files are included in the image. This approach helps keep the image size minimal and avoids exposing any unwanted or sensitive files to the container.
 
-<a id="2.6-use-specific-copy-instructions"></a>
+<a id="s2.6-use-specific-copy-instructions"></a>
 
 ### 2.7 Set the correct container user 
 By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the USER instruction.
@@ -289,7 +289,7 @@ Yes:
 
 In this improved example, a dedicated non-root user (myuser) is created using the useradd and groupadd commands. The ownership and permissions of the /app directory are changed to the non-root user using chown. Finally, the USER instruction switches to the non-root user before running the application.
 
-<a id="2.7-set-the-correct-container-user"></a>
+<a id="s2.7-set-the-correct-container-user"></a>
 
 ### 2.8 Use environment variables for configuration
 Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
@@ -335,7 +335,7 @@ For example, when running the container, you can override the default values:
 
 ```docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage```
 
-<a id="2.8-use-environment-variables-for-configuration"></a>
+<a id="s2.8-use-environment-variables-for-configuration"></a>
 
 ### 2.9 Document your Dockerfile
 Include comments in your Dockerfile to provide context and explanations for the various instructions. This helps other developers understand the purpose and functionality of the Dockerfile.
@@ -389,7 +389,7 @@ In this improved example, the Dockerfile is better documented:
 - The `LABEL` instructions are used to provide additional information about the image, such as the maintainer, description, and version.
 - The `EXPOSE` instruction documents the port that should be exposed for accessing the application.
 
-<a id="2.9-document-your-dockerfile"></a>
+<a id="s2.9-document-your-dockerfile"></a>
 
 ### 2.10 Use .dockerignore file
 The .dockerignore file allow you to exclude files the context like a .gitignore file allow you to exclude files from your git repository.
@@ -430,7 +430,7 @@ In this improved example, a `.dockerignore` file is used to exclude unnecessary 
 
 The `.dockerignore` file in this example excludes the `.git` directory, the `node_modules` directory (common for Node.js projects), and files with extensions `.log` and `.tmp`. These files and directories are typically not needed in the final image and can be safely ignored.
 
-<a id="2.10-use-dockerignore"></a>
+<a id="s2.10-use-dockerignore"></a>
 
 ### 2.11 Test your image
 After building your Docker image, run it in a container to verify that everything works as expected. This ensures that your image is functional and can be used with confidence.
@@ -472,21 +472,21 @@ In this improved example, a dedicated step is added to run tests within the Dock
 
 It's important to note that this example assumes the tests are included in a `tests` directory within the project structure. Adjust the command (`python3 -m unittest discover tests`) as per your project's testing setup.
 
-<a id="2.11-test-your-image"></a>
+<a id="s2.11-test-your-image"></a>
 
 ## 3 Good demo
 
-<a id="3-good-demo"></a>
+<a id="s3-good-demo"></a>
 
 ---
 
 ## 4 Contributing guide
 
-<a id="4-contributing-guide"></a>
+<a id="s4-contributing-guide"></a>
 
 ## 5 References: 
 https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
-<a id="5-references"></a>
+<a id="s5-references"></a>
 
 
