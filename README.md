@@ -19,11 +19,12 @@ See README.md for details.
 -->
 
 # Good practices on writing Dockerfile
+Last updated: Jun 11, 2023
 
 Website: [https://chrislevn.github.io/dockerfile-practices/](https://chrislevn.github.io/dockerfile-practices/)
 <br/>
 Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/chrislevn/dockerfile-practices)
-Simple Demo running Docker with Python: [https://github.com/chrislevn/dockerfile-practices/tree/main/demo](https://github.com/chrislevn/dockerfile-practices/tree/main/demo)
+Simple Demos running Docker with Python: [https://github.com/chrislevn/dockerfile-practices/tree/main/demo](https://github.com/chrislevn/dockerfile-practices/tree/main/demo)
 
 <!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
 

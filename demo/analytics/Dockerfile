@@ -6,6 +6,7 @@ WORKDIR /app
 ENV PORT=5001
 
 COPY requirements.txt .
+COPY layoffs.csv .
 RUN pip install -r requirements.txt
 
 COPY app.py .
