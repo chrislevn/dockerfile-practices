@@ -69,7 +69,6 @@ Docker is an open-source platform that enables you to automate the deployment, s
 
 This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. If you have new tips, feel free to contribute via [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md). Hope this helps!
 
-
 ## 2 Dockerfile's practices
 <a id="s2-dockerfile-practices"></a>
 
