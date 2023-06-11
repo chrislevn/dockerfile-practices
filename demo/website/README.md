@@ -1,5 +1,7 @@
 # Docker demo: Running a webiste 
 
+![Screenshot 2023-06-11 at 2 08 07 AM](https://github.com/chrislevn/dockerfile-practices/assets/32094007/9c644f25-59a5-4c4f-a8b0-ee744131b191)
+
 ## What this website does:
 A calculator app with Python
 
