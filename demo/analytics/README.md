@@ -1,5 +1,7 @@
 # An analysis with Docker and Python
 
+![Screenshot 2023-06-11 at 2 05 13 AM](https://github.com/chrislevn/dockerfile-practices/assets/32094007/2219eec4-dfb4-4fbf-8a52-04d3bb0a0ac4)
+
 ## What it does
 Analytic top industries laid off with Python, Pandas, plotly and Docker
 
