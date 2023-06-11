@@ -1116,20 +1116,15 @@ docker run -it -p 8000:8000 myapp:1.0
 
 <a id="s7-contributing"></a>
 
-### Contributing guide
+### [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
 <a id="s7.1-contributing-guide"></a>
-
-[Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
 ### Acknowledgement
 
 <a id="s7.2-acknowledgement"></a>
 
-<details markdown="1"> 
-  <summary>Chap 2</summary>
-- [Thinh Nguyen](https://github.com/ducthinh993)
-</details>
+- [Thinh Nguyen](https://github.com/ducthinh993) - 3.4, 3.5
 
 ## 8. References: 
 
