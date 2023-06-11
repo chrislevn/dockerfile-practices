@@ -47,16 +47,20 @@ Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/c
 ---
 
 ## 1 Background
+
+<a id="s1-background"></a>
+
 Docker is an open-source platform that enables you to automate the deployment, scaling, and management of applications using containerization. It provides a way to package applications and their dependencies into a standardized unit called a container. 
 
 This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. If you have new tips, feel free to contribute via [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md). Hope this helps!
 
-<a id="s1-background"></a>
 
 ## 2 Dockerfile's practices
 <a id="s2-dockerfile-practices"></a>
 
 ### 2.1 Use minimal base images
+
+<a id="s2.1-minimal-base-image"></a>
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
 
@@ -80,10 +84,12 @@ Base image types:
 References: 
 - https://medium.com/swlh/alpine-slim-stretch-buster-jessie-bullseye-bookworm-what-are-the-differences-in-docker-62171ed4531d
   
-
-<a id="s2.1-minimal-base-image"></a>
-
+  
 ### 2.2 Use explicit tags for the base image.
+
+<a id="s2.2-base-image-explicit-tags"></a>
+
+
 Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
  
  No: 
@@ -98,9 +104,11 @@ Yes:
 FROM company/image_name:version
 ```
 
-<a id="s2.2-base-image-explicit-tags"></a>
 
 ### 2.3 Leverage layer caching
+
+<a id="s2.3-leverage-layer-caching"></a>
+
 Docker builds images using a layered approach, and it caches each layer. Place the instructions that change less frequently towards the top of the Dockerfile. This allows Docker to reuse cached layers during subsequent builds, speeding up the build process.
 
 No:
@@ -159,10 +167,11 @@ RUN npm run build
 
 In this improved example, we take advantage of layer caching by separating the steps that change less frequently from the steps that change more frequently. Only the necessary files (package.json and package-lock.json) are copied in a separate layer to install the dependencies. This allows Docker to reuse the cached layer for subsequent builds as long as the dependency files remain unchanged. The rest of the application files are copied in a separate step, reducing unnecessary cache invalidation.
 
-<a id="s2.3-leverage-layer-caching"></a>
-
 
 ### 2.4 Consolidate related operations
+
+<a id="s2.4-consolidate-related-operations"></a>
+
 Minimize the number of layers by combining related operations into a single instruction. For example, instead of installing multiple packages in separate `RUN` instructions, group them together using a single RUN instruction.
 
 No:
@@ -204,9 +213,11 @@ RUN npm install express lodash axios
 
 In this improved example, related package installations are consolidated into a single RUN instruction. This approach reduces the number of layers and improves layer caching. If no changes occur in the package.json file, Docker can reuse the previously cached layer for the npm install step, resulting in faster builds.
 
-<a id="s2.4-consolidate-related-operations"></a>
 
 ### 2.5 Remove unnecessary artifacts
+
+<a id="s2.5-remove-unnecessary-artifacts"></a>
+
 Clean up any unnecessary artifacts created during the build process to reduce the size of the final image. For example, remove temporary files, unused dependencies, and package caches.
 
 No:
@@ -271,9 +282,11 @@ pipreqs --force /<your_project_root_path>/
 Note: -a parameter is not available under MacOS, so old cat is more portable.
 Reference: [https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt](https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt)
 
-<a id="s2.5-remove-unnecessary-artifacts"></a>
 
 ### 2.6 Use specific COPY instructions
+
+<a id="s2.6-use-specific-copy-instructions"></a>
+
 When copying files into the image, be specific about what you're copying. Avoid using . (dot) as the source directory, as it can inadvertently include unwanted files. Instead, explicitly specify the files or directories you need.
 
 No:
@@ -301,9 +314,11 @@ Yes:
 
 In this improved example, specific files (app.py and requirements.txt) are copied into a designated directory (/app). By explicitly specifying the required files, you ensure that only the necessary files are included in the image. This approach helps keep the image size minimal and avoids exposing any unwanted or sensitive files to the container.
 
-<a id="s2.6-use-specific-copy-instructions"></a>
 
 ### 2.7 Set the correct container user 
+
+<a id="s2.7-set-the-correct-container-user"></a>
+
 By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the USER instruction.
 
 No:
@@ -352,9 +367,11 @@ CMD ["python3", "app.py"]
 
 In this improved example, a dedicated non-root user (myuser) is created using the useradd and groupadd commands. The ownership and permissions of the /app directory are changed to the non-root user using chown. Finally, the USER instruction switches to the non-root user before running the application.
 
-<a id="s2.7-set-the-correct-container-user"></a>
 
 ### 2.8 Use environment variables for configuration
+
+<a id="s2.8-use-environment-variables-for-configuration"></a>
+
 Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
 
 No:
@@ -401,9 +418,11 @@ For example, when running the container, you can override the default values:
 docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage
 ```
 
-<a id="s2.8-use-environment-variables-for-configuration"></a>
 
 ### 2.9 Document your Dockerfile
+
+<a id="s2.9-document-your-dockerfile"></a>
+
 Include comments in your Dockerfile to provide context and explanations for the various instructions. This helps other developers understand the purpose and functionality of the Dockerfile.
 
 No:
@@ -459,9 +478,11 @@ In this improved example, the Dockerfile is better documented:
 - The `LABEL` instructions are used to provide additional information about the image, such as the maintainer, description, and version.
 - The `EXPOSE` instruction documents the port that should be exposed for accessing the application.
 
-<a id="s2.9-document-your-dockerfile"></a>
 
 ### 2.10 Use .dockerignore file
+
+<a id="s2.10-use-dockerignore"></a>
+
 The .dockerignore file allow you to exclude files the context like a .gitignore file allow you to exclude files from your git repository.
 It helps to make build faster and lighter by excluding from the context big files or repository that are not used in the build.
 
@@ -504,9 +525,11 @@ In this improved example, a `.dockerignore` file is used to exclude unnecessary 
 
 The `.dockerignore` file in this example excludes the `.git` directory, the `node_modules` directory (common for Node.js projects), and files with extensions `.log` and `.tmp`. These files and directories are typically not needed in the final image and can be safely ignored.
 
-<a id="s2.10-use-dockerignore"></a>
 
 ### 2.11 Test your image
+
+<a id="s2.11-test-your-image"></a>
+
 After building your Docker image, run it in a container to verify that everything works as expected. This ensures that your image is functional and can be used with confidence.
 
 No:
@@ -548,9 +571,11 @@ In this improved example, a dedicated step is added to run tests within the Dock
 
 It's important to note that this example assumes the tests are included in a `tests` directory within the project structure. Adjust the command (`python3 -m unittest discover tests`) as per your project's testing setup.
 
-<a id="s2.11-test-your-image"></a>
 
 ### 2.12 ADD or COPY
+
+<a id="s2.12-add=or-copy"></a>
+
 Although `ADD` and `COPY` are functionally similar, generally speaking, `COPY` is preferred. That’s because it’s more transparent than `ADD`. `COPY` only supports the basic copying of local files into the container, while `ADD` has some features (like local-only tar extraction and remote URL support) that are not immediately obvious. Consequently, the best use for `ADD` is local tar file auto-extraction into the image, as in `ADD rootfs.tar.xz /.`
 
 If you have multiple Dockerfile steps that use different files from your context, `COPY` them individually, rather than all at once. This ensures that each step’s build cache is only invalidated, forcing the step to be re-run if the specifically required files change.
@@ -593,12 +618,15 @@ For more information about ADD or COPY, see the following:
 
 Reference: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.
 
-<a id="s2.12-add=or-copy"></a>
 
 ## Other references: 
+
 <a id="s3-others"></a>
 
 ### 3.1 EXPOSE
+
+<a id="s3.1-expose"></a>
+
 The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. EXPOSE does not make the ports of the container accessible to the host.
 
 ```Dockerfile
@@ -618,9 +646,10 @@ For example, to publish port 80 of a container to port 8080 on the host machine:
 docker run -p 8080:80 myimage
 ```
 
-<a id="s3.1-expose"></a>
 
 ### 3.2 ENTRYPOINT vs CMD vs RUN
+
+<a id="s3.2-entrypoint-cmd-run"></a>
 
 - ENTRYPOINT: The ENTRYPOINT instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use ENTRYPOINT in either the shell form (as a command string) or the exec form (as an array of strings).
 
@@ -700,19 +729,20 @@ The CMD instruction provides default arguments to the ENTRYPOINT command. In thi
 
 When you build and run the container, the Python application specified by app.py will be executed as the primary command. However, if you provide additional arguments when running the container, they will override the default arguments specified by CMD.
 
-<a id="s3.2-entrypoint-cmd-run"></a>
 
 ### 3.3 Docker Image vs Docker Containers: 
 
-Docker Image:
+<a id="s3.3-image-vs-containers"></a>
+
+#### Docker Image:
 
 A Docker image is a lightweight, standalone, and executable package that contains everything needed to run a piece of software, including the code, runtime environment, libraries, dependencies, and system tools. It is created from a Dockerfile, which specifies the instructions for building the image. Images are immutable, meaning they are read-only and cannot be modified once created. You can think of an image as a blueprint or template for creating containers.
 
-Docker Container:
+#### Docker Container:
 
 A Docker container is a running instance of an image. It is a lightweight and isolated runtime environment that encapsulates an application and its dependencies. Containers are created from Docker images and can be started, stopped, paused, restarted, and deleted as needed. Each container runs in isolation, utilizing the host system's resources efficiently while providing a consistent environment for the application to run. Containers are transient and can be recreated easily from the corresponding image.
 
-Docker Image vs Containers
+#### Docker Image vs Containers
 - The key difference between a Docker image Vs a container is that a Docker image is a read-only immutable template that defines how a container will be realized. A Docker container is a runtime instance of a Docker image that gets created when the $ docker run command is implemented.  
 - Before the docker container can even exist docker templates/images are built using $ docker build CLI. 
 - Docker image templates can exist in isolation but containers can't exist without images.  
@@ -721,9 +751,11 @@ Docker Image vs Containers
 
 
 Reference: https://www.knowledgehut.com/blog/devops/docker-vs-container
-<a id="s3.3-image-vs-containers"></a>
 
 ### 3.4 WORKDIR
+
+<a id="s3.4-workdir"></a>
+
 In a Dockerfile, the `WORKDIR` instruction is used to set the working directory for any subsequent instructions in the Dockerfile. It is similar to the cd command in Linux or Unix systems.
 
 ```Dockerfile
@@ -732,7 +764,7 @@ WORKDIR /path/to/directory
 
 Here, `/path/to/directory` is the absolute or relative path to the directory you want to set as the working directory. If the directory does not exist, Docker will create it.
 
-The WORKDIR instruction affects subsequent instructions like `RUN`, `CMD`, `COPY`, and `ADD`. Any relative paths specified in these instructions will be resolved relative to the working directory set by `WORKDIR`.
+The `WORKDIR` instruction affects subsequent instructions like `RUN`, `CMD`, `COPY`, and `ADD`. Any relative paths specified in these instructions will be resolved relative to the working directory set by `WORKDIR`.
 
 It's recommended to use absolute paths for better clarity and predictability in your Dockerfile.
 
@@ -755,9 +787,9 @@ For clarity and reliability, you should always use absolute paths for your WORKD
 
 For more information about USER, see [Dockerfile reference for the USER instruction](https://docs.docker.com/engine/reference/builder/#user).
 
-<a id="s3.4-workdir"></a>
-
 ### 3.5 VOLUME
+
+<a id="s3.5-volume"></a>
 
 In a Dockerfile, the `VOLUME` instruction is used to create a mount point and designate a directory as a volume for persistent data storage or sharing between containers and the host system.
 
@@ -795,7 +827,6 @@ The `VOLUME` instruction should be used to expose any database storage area, con
 
 For more information about `VOLUME`, see [Dockerfile reference for the `VOLUME` instruction](https://docs.docker.com/engine/reference/builder/#volume).
 
-<a id="s3.5-volume"></a>
 
 ### 3.6 USER
 In a Dockerfile, the USER instruction is used to specify the user or UID (user identifier) that the container should run as when executing subsequent instructions.
@@ -848,6 +879,9 @@ For more information about `USER`, see [Dockerfile reference for the `USER` inst
 <a id="s3.6-user"></a>
 
 ### 3.7 ONBUILD
+
+<a id="s3.7-onbuild"></a>
+
 The `ONBUILD` instruction is used to add triggers to an image that will be executed when the image is used as the base for another Docker image. It allows you to define actions that should be performed in child images without modifying the parent image.
 
 The syntax for the `ONBUILD` instruction is as follows:
@@ -858,7 +892,7 @@ ONBUILD <INSTRUCTION>
 
 Here, `<INSTRUCTION>` can be any valid Dockerfile instruction like `RUN`, `COPY`, `CMD`, etc. It represents the action or instruction that should be executed in the child image.
 
-When an image with an ONBUILD instruction is used as the base image for another Docker image, the specified instruction is recorded and saved in the metadata of the parent image. Then, when the child image is built, Docker triggers and executes those recorded instructions as part of the child image build process.
+When an image with an `ONBUILD` instruction is used as the base image for another Docker image, the specified instruction is recorded and saved in the metadata of the parent image. Then, when the child image is built, Docker triggers and executes those recorded instructions as part of the child image build process.
 
 The `ONBUILD` instruction is typically used to automate certain tasks or actions that are common to many derived images. For example, you can use it to specify actions like copying files into the image, setting environment variables, or running commands.
 
@@ -891,9 +925,10 @@ For more information about ONBUILD, see [Dockerfile reference for the `ONBUILD` 
 
 Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 
-<a id="s3.7-onbuild"></a>
 
 ## 4 Good demo
+
+<a id="s4-good-demo"></a>
 
 ```Dockerfile
 # Use a suitable base image
@@ -937,9 +972,11 @@ In this example, we follow several best practices:
 -Environment variables are set for configuring the database connection.
 -The `CMD` instruction specifies the command to run when the container starts.
 
-<a id="s4-good-demo"></a>
 
 ## 5 Basic steps to running Docker file with docker cli: 
+
+<a id="s5-run-with-docker-cli"></a>
+
 - Make sure you have Docker installed and running on your system. You can check this by running the docker version command in your terminal or command prompt. If you have Docker Destop, make sure it is running. 
 - Create a Dockerfile in your project directory. The Dockerfile contains instructions for building your Docker image. 
 - Open a terminal or command prompt and navigate to the directory where your Dockerfile is located.
@@ -965,17 +1002,18 @@ Note: If your application requires ports to be exposed, you can use the -p optio
 docker run -it -p 8000:8000 myapp:1.0
 ```
 
-<a id="s5-run-with-docker-cli"></a>
-
 ---
 
 ## 6 Contributing guide
 
-[Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
-
 <a id="s6-contributing-guide"></a>
 
+[Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
+
 ## 7 References: 
+
+<a id="s7-references"></a>
+
 - [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 - [https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4](https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4)
 - [https://google.github.io/styleguide/pyguide.html](https://google.github.io/styleguide/pyguide.html)
@@ -984,6 +1022,5 @@ docker run -it -p 8000:8000 myapp:1.0
 - [https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62](https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62)
 - [https://www.knowledgehut.com/blog/devops/docker-vs-container](https://www.knowledgehut.com/blog/devops/docker-vs-container)
 
-<a id="s7-references"></a>
 
 
