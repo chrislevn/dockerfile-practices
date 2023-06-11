@@ -1,0 +1,49 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask Docker</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('form').submit(function (event) {
+                event.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        var result = response.result;
+                        var operation = response.operation;
+                        var num1 = response.num1;
+                        var num2 = response.num2;
+                        var message = '\n' + num1 + ' ' + operation + ' ' + num2 + ' = ' + result;
+                        $('#result').text(message);
+                    },
+                    error: function () {
+                        $('#result').text('Error occurred during calculation.');
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1> Calculator app with Python and Docker </h1>
+    <form action="/calculate" method="post">
+        <input type="text" name="num1" placeholder="Enter first number">
+        <input type="text" name="num2" placeholder="Enter second number">
+        <select name="operation">
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+            <option value="multiply">Multiply</option>
+            <option value="divide">Divide</option>
+        </select>
+        <button type="submit">Calculate</button>
+    </form>
+    <div id="result"></div>
+</body>
+</html>
