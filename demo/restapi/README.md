@@ -1,4 +1,4 @@
-# Create a ResrAPI with Docker and Python
+# Create a RestAPI with Docker and Python
 
 ## What it does
 - GET: get data as JSON `'message': 'GET request received'`
