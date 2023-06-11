@@ -20,6 +20,8 @@ See README.md for details.
 
 # Good practices on writing Dockerfile
 
+{% raw %}{% seo %}{% endraw %}
+
 Website: [https://chrislevn.github.io/dockerfile-practices/](https://chrislevn.github.io/dockerfile-practices/)
 <br/>
 Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/chrislevn/dockerfile-practices)
