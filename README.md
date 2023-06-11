@@ -39,6 +39,7 @@ Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/c
     * [2.6 Use specific COPY instructions](#s2.6-use-specific-copy-instructions)
     * [2.7 Set the correct container user](#s2.7-set-the-correct-container-user)
     * [2.8 Use environment variables for configuration](#s2.8-use-environment-variables-for-configuration)
+    * * [2.8.1 Setting Dynamic Environment Values](#s2.8.1-set-dynamic-env-values)
     * [2.9 Document your Dockerfile](#s2.9-document-your-dockerfile)
     * [2.10 Use .dockerignore file](#s2.10-use-dockerignore)
     * [2.11 Test your image](#s2.11-test-your-image)
@@ -432,6 +433,35 @@ For example, when running the container, you can override the default values:
 docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage
 ```
 
+#### 2.8.1 Setting Dynamic Environment Values (ARG vs ENV)
+
+<a id="s2.8.1-set-dynamic-env-values"></a>
+
+Dockerfile doesn't provide a dynamic tool to set an ENV value during the build process. However, there's a solution to this problem. We have to use ARG. ARG values don't work in the same way as ENV, as we can’t access them anymore once the image is built. 
+
+![image](https://github.com/chrislevn/dockerfile-practices/assets/32094007/b45d08b5-6bb4-44db-bf0c-2a8b1d8e7ed6)
+
+Let's see how we can work around this issue:
+
+```Dockerfile
+ARG name
+ENV env_name $name
+```
+
+We'll introduce the name ARG variable. Then we'll use it to assign a value to the env_name environment variable using ENV.
+When we want to set this argument, we'll pass it with the –build-arg flag:
+
+```console
+docker build -t baeldung_greetings --build-arg name=Christopher .
+```
+
+Now we'll run our container. We should see:
+
+```console 
+Hello Christopher
+```
+
+Reference: [https://www.baeldung.com/ops/dockerfile-env-variable](https://www.baeldung.com/ops/dockerfile-env-variable)
 
 ### 2.9 Document your Dockerfile
 
@@ -650,7 +680,7 @@ FROM nginx:latest
 EXPOSE 80
 ```
 
-In this example, the EXPOSE instruction is used to document that the containerized Nginx web server is expected to listen on port 80 for HTTP traffic. Users who want to connect to the running container can refer to the EXPOSE instruction to determine which ports should be accessed.
+In this example, the `EXPOSE` instruction is used to document that the containerized Nginx web server is expected to listen on port 80 for HTTP traffic. Users who want to connect to the running container can refer to the EXPOSE instruction to determine which ports should be accessed.
 
 To make the exposed ports accessible from the host machine, you need to publish them when running the container using the -p or -P option of the docker run command.
 
@@ -665,7 +695,7 @@ docker run -p 8080:80 myimage
 
 <a id="s3.2-entrypoint-cmd-run"></a>
 
-- ENTRYPOINT: The ENTRYPOINT instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use ENTRYPOINT in either the shell form (as a command string) or the exec form (as an array of strings).
+- `ENTRYPOINT`: The `ENTRYPOINT` instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use `ENTRYPOINT` in either the shell form (as a command string) or the exec form (as an array of strings).
 
 ```Dockerfile
 FROM ubuntu:20.04
@@ -674,7 +704,7 @@ FROM ubuntu:20.04
 ENTRYPOINT ["echo", "Hello, World!"]
 ```
 
-- CMD: The CMD instruction provides default arguments for the entrypoint command defined by ENTRYPOINT. It sets the default parameters or arguments that will be passed to the entrypoint command when the container starts. CMD can also be specified in either the shell form (as a command string) or the exec form (as an array of strings). If the CMD instruction is present in the Dockerfile, it will be overridden by any command line arguments passed to the docker run command when starting the container.
+- `CMD`: The `CMD` instruction provides default arguments for the entrypoint command defined by `ENTRYPOINT`. It sets the default parameters or arguments that will be passed to the entrypoint command when the container starts. `CMD` can also be specified in either the shell form (as a command string) or the exec form (as an array of strings). If the `CMD` instruction is present in the Dockerfile, it will be overridden by any command line arguments passed to the docker run command when starting the container.
 
 ```Dockerfile
 FROM ubuntu:20.04
@@ -686,7 +716,7 @@ ENTRYPOINT ["echo"]
 CMD ["Hello, World!"]
 ```
 
-- RUN: The RUN instruction is used to execute commands during the build process of the Docker image. It runs commands within the image's file system and creates a new layer with the changes made by the commands. RUN is typically used for installing dependencies, configuring the environment, or performing any actions needed to set up the image for runtime. Each RUN instruction creates a new layer in the Docker image, and the changes made by the command are preserved in that layer.
+- `RUN`: The `RUN` instruction is used to execute commands during the build process of the Docker image. It runs commands within the image's file system and creates a new layer with the changes made by the commands. `RUN` is typically used for installing dependencies, configuring the environment, or performing any actions needed to set up the image for runtime. Each `RUN` instruction creates a new layer in the Docker image, and the changes made by the command are preserved in that layer.
 
 ```Dockerfile
 FROM ubuntu:20.04
@@ -695,8 +725,8 @@ FROM ubuntu:20.04
 RUN apt-get update && apt-get install -y curl
 ```
 
-More on ENTRYPOINT:
-In Docker, the ENTRYPOINT instruction is used in a Dockerfile to specify the primary command that should be run when a container is started from the image. It sets the executable that will be invoked by default when the container is run as an executable.
+More on `ENTRYPOINT`:
+In Docker, the `ENTRYPOINT` instruction is used in a Dockerfile to specify the primary command that should be run when a container is started from the image. It sets the executable that will be invoked by default when the container is run as an executable.
 
 Shell form: 
 
@@ -712,11 +742,11 @@ FROM ubuntu:20.04
 ENTRYPOINT ["/bin/echo", "Hello, World!"]
 ```
 
-In the shell form, the ENTRYPOINT instruction is specified as a command string. This command string is interpreted as a shell command, allowing for shell processing, variable substitution, and other shell features.
+In the shell form, the `ENTRYPOINT` instruction is specified as a command string. This command string is interpreted as a shell command, allowing for shell processing, variable substitution, and other shell features.
 
-In the exec form, the ENTRYPOINT instruction is specified as an array of strings. The first element of the array is the executable, and subsequent elements are passed as arguments to the executable.
+In the exec form, the `ENTRYPOINT` instruction is specified as an array of strings. The first element of the array is the executable, and subsequent elements are passed as arguments to the executable.
 
-The ENTRYPOINT instruction provides a way to set a default command or executable for the container. Any additional parameters passed when running the container will be appended to the ENTRYPOINT command, allowing for flexibility and parameterization.
+The ENTRYPOINT instruction provides a way to set a default command or executable for the container. Any additional parameters passed when running the container will be appended to the `ENTRYPOINT` command, allowing for flexibility and parameterization.
 
 In Python, here is how `ENTRYPOINT` can be used with `CMD`:
 
@@ -735,18 +765,21 @@ ENTRYPOINT ["python3"]
 CMD ["app.py"]
 ```
 
-In this example, the Dockerfile starts with a Python base image (python:3.9-slim-buster) and sets the working directory to /app. The Python application code file (app.py) is then copied into the image.
+In this example, the Dockerfile starts with a Python base image (`python:3.9-slim-buster`) and sets the working directory to `/app`. The Python application code file (`app.py`) is then copied into the image.
 
-The ENTRYPOINT instruction specifies the command that will be executed when the container starts. In this case, it sets the command to python3, which is the Python interpreter.
+The `ENTRYPOINT` instruction specifies the command that will be executed when the container starts. In this case, it sets the command to python3, which is the Python interpreter.
 
-The CMD instruction provides default arguments to the ENTRYPOINT command. In this case, the default argument is app.py, representing the Python script that will be executed.
+The `CMD` instruction provides default arguments to the `ENTRYPOINT` command. In this case, the default argument is app.py, representing the Python script that will be executed.
 
-When you build and run the container, the Python application specified by app.py will be executed as the primary command. However, if you provide additional arguments when running the container, they will override the default arguments specified by CMD.
+When you build and run the container, the Python application specified by app.py will be executed as the primary command. However, if you provide additional arguments when running the container, they will override the default arguments specified by `CMD`.
 
 
 ### 3.3 Docker Image vs Docker Containers: 
 
 <a id="s3.3-image-vs-containers"></a>
+
+![image](https://github.com/chrislevn/dockerfile-practices/assets/32094007/05fa9dc6-82b6-4fd9-be27-759d46632e25)
+
 
 #### Docker Image:
 
@@ -815,7 +848,7 @@ VOLUME ["/path/to/volume"]
 
 Here, "/path/to/volume" specifies the absolute path to the directory that you want to designate as a volume.
 
-When you run a container using an image that includes a VOLUME instruction, Docker creates a mount point at the specified path and sets it as a volume. Any data written to that directory inside the container will be stored in the volume. The data in the volume persists even after the container is stopped or removed.
+When you run a container using an image that includes a `VOLUME` instruction, Docker creates a mount point at the specified path and sets it as a volume. Any data written to that directory inside the container will be stored in the volume. The data in the volume persists even after the container is stopped or removed.
 
 Volumes are typically used for storing databases, logs, configuration files, or any other data that needs to persist beyond the lifecycle of a container. They provide a way to separate the storage of data from the container itself, making it easier to manage and migrate containers without losing important data.
 
@@ -851,11 +884,11 @@ USER user[:group]
 
 Here, user can be either the username or the UID of the user you want to set as the user for the container. Optionally, you can specify group to set the group for the user as well.
 
-The USER instruction is often used to run the container with a non-root user for security reasons. By default, Docker containers run as the root user (UID 0), which can pose security risks. Running the container as a non-root user helps to minimize the impact of potential security vulnerabilities.
+The `USER` instruction is often used to run the container with a non-root user for security reasons. By default, Docker containers run as the root user (UID 0), which can pose security risks. Running the container as a non-root user helps to minimize the impact of potential security vulnerabilities.
 
 You can specify the user by either using the username or the UID. If you provide a username, Docker will try to resolve it to the corresponding UID and GID (group identifier) within the container. If you provide a UID directly, Docker will use that UID and assign it to the user.
 
-Here's an example of how the USER instruction can be used in a Dockerfile:
+Here's an example of how the `USER` instruction can be used in a Dockerfile:
 
 ```Dockerfile 
 FROM ubuntu:latest
@@ -871,9 +904,9 @@ USER myuser
 CMD ["python3", "app.py"]
 ```
 
-In this example, the Dockerfile creates a new user named myuser and a group named mygroup. The USER instruction sets myuser as the user for subsequent instructions, starting from the CMD instruction. This ensures that the container runs with the specified user rather than the root user.
+In this example, the Dockerfile creates a new user named myuser and a group named mygroup. The `USER` instruction sets myuser as the user for subsequent instructions, starting from the `CMD` instruction. This ensures that the container runs with the specified user rather than the root user.
 
-If a service can run without privileges, use USER to change to a non-root user. Start by creating the user and group in the Dockerfile with something like the following example:
+If a service can run without privileges, use `USER` to change to a non-root user. Start by creating the user and group in the Dockerfile with something like the following example:
 
 ```Dockerfile
 RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres
@@ -884,7 +917,7 @@ Consider an explicit UID/GID.
 
 Users and groups in an image are assigned a non-deterministic UID/GID in that the “next” UID/GID is assigned regardless of image rebuilds. So, if it’s critical, you should assign an explicit UID/GID.
 
-Avoid installing or using sudo as it has unpredictable TTY and signal-forwarding behavior that can cause problems. If you absolutely need functionality similar to `sudo`, such as initializing the daemon as `root` but running it as non-root, consider using “gosu”.
+Avoid installing or using sudo as it has unpredictable `TTY` and signal-forwarding behavior that can cause problems. If you absolutely need functionality similar to `sudo`, such as initializing the daemon as `root` but running it as non-root, consider using “gosu”.
 
 Lastly, to reduce layers and complexity, avoid switching `USER` back and forth frequently.
 
@@ -929,9 +962,9 @@ An `ONBUILD` command executes after the current Dockerfile build completes. `ONB
 
 A Docker build executes `ONBUILD` commands before any command in a child Dockerfile.
 
-`ONBUILD` is useful for images that are going to be built FROM a given image. For example, you would use ONBUILD for a language stack image that builds arbitrary user software written in that language within the Dockerfile, as you can see in Ruby’s `ONBUILD` variants.
+`ONBUILD` is useful for images that are going to be built `FROM` a given image. For example, you would use `ONBUILD` for a language stack image that builds arbitrary user software written in that language within the Dockerfile, as you can see in Ruby’s `ONBUILD` variants.
 
-Images built with ONBUILD should get a separate tag. For example, `ruby:1.9-onbuild` or `ruby:2.0-onbuild`.
+Images built with `ONBUILD` should get a separate tag. For example, `ruby:1.9-onbuild` or `ruby:2.0-onbuild`.
 
 Be careful when putting `ADD` or `COPY` in `ONBUILD`. The onbuild image fails catastrophically if the new build’s context is missing the resource being added. Adding a separate tag, as recommended above, helps mitigate this by allowing the Dockerfile author to make a choice.
 
@@ -1035,6 +1068,7 @@ docker run -it -p 8000:8000 myapp:1.0
 - [https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d](https://we-are.bookmyshow.com/understanding-expose-in-dockerfile-266938b6a33d)
 - [https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62](https://towardsdatascience.com/goodbye-pip-freeze-welcome-pipreqs-258d2e7a5a62)
 - [https://www.knowledgehut.com/blog/devops/docker-vs-container](https://www.knowledgehut.com/blog/devops/docker-vs-container)
+- [https://refine.dev/blog/docker-build-args-and-env-vars/#how-to-pass-arg-variables](https://refine.dev/blog/docker-build-args-and-env-vars/#how-to-pass-arg-variables)
 
 
 
