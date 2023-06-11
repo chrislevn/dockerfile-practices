@@ -13,8 +13,8 @@ Analytic top industries laid off with Python, Pandas, plotly and Docker
 2. Run the file with Docker
 - Make sure Docker is running
 - Run `docker build -t analytics . `
-- Run `docker run analytics`
+- Run `docker run -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> analytics`
 
-3. To have the image exists and removes itself, run `docker run --rm analytics`
+3. To have the image exists and removes itself, run `docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> analytics`
 
 Note: the data is in the directory now, but to reduce the image size, consider put your data on the cloud and retrive it with RestAPI. 
