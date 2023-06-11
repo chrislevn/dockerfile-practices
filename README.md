@@ -630,7 +630,7 @@ For more information about ADD or COPY, see the following:
 - [Dockerfile reference for the ADD instruction](https://docs.docker.com/engine/reference/builder/#add)
 - [Dockerfile reference for the COPY instruction](https://docs.docker.com/engine/reference/builder/#copy)
 
-Reference: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.
+Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.)
 
 
 ## Other references: 
