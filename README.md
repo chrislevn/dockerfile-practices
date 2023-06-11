@@ -25,53 +25,54 @@ Website: [https://chrislevn.github.io/dockerfile-practices/](https://chrislevn.g
 <br/>
 Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/chrislevn/dockerfile-practices)
 <br/>
-Simple Demos running Docker with Python: [https://github.com/chrislevn/dockerfile-practices/tree/main/demo](https://github.com/chrislevn/dockerfile-practices/tree/main/demo)
+Simple demos running Docker with Python: [https://github.com/chrislevn/dockerfile-practices/tree/main/demo](https://github.com/chrislevn/dockerfile-practices/tree/main/demo)
 
 <!-- markdown="1" is required for GitHub Pages to render the TOC properly. -->
 
 <details markdown="1"> 
   <summary>Table of Contents</summary>
   
-- [Good practices on writing Dockerfile](#good-practices-on-writing-dockerfile)
-  - [1 Background](#1-background)
-  - [2 Dockerfile's practices](#2-dockerfiles-practices)
-    - [2.1 Use minimal base images](#21-use-minimal-base-images)
-    - [2.2 Use explicit tags for the base image.](#22-use-explicit-tags-for-the-base-image)
-    - [2.3 Leverage layer caching](#23-leverage-layer-caching)
-    - [2.4 Consolidate related operations](#24-consolidate-related-operations)
-    - [2.5 Remove unnecessary artifacts](#25-remove-unnecessary-artifacts)
-    - [2.6 Use specific COPY instructions](#26-use-specific-copy-instructions)
-    - [2.7 Set the correct container user](#27-set-the-correct-container-user)
-    - [2.8 Use environment variables for configuration](#28-use-environment-variables-for-configuration)
-      - [2.8.1 Setting Dynamic Environment Values (ARG vs ENV)](#281-setting-dynamic-environment-values-arg-vs-env)
-    - [2.9 Document your Dockerfile](#29-document-your-dockerfile)
-    - [2.10 Use .dockerignore file](#210-usedockerignore-file)
-    - [2.11 Test your image](#211-test-your-image)
-    - [2.12 ADD or COPY](#212-add-or-copy)
-    - [2.13 Create a non-root user in the Dockerfile](#213-create-a-non-root-user-in-the-dockerfile)
-    - [2.14 Avoid running containers with root privileges](#214-avoid-running-containers-with-root-privileges)
-  - [Other references:](#other-references)
-    - [3.1 EXPOSE](#31-expose)
-    - [3.2 ENTRYPOINT vs CMD vs RUN](#32-entrypoint-vs-cmd-vs-run)
-    - [3.3 Docker Image vs Docker Containers:](#33-docker-image-vs-docker-containers)
-      - [Docker Image:](#docker-image)
-      - [Docker Container:](#docker-container)
-      - [Docker Image vs Containers](#docker-image-vs-containers)
-    - [3.4 WORKDIR](#34-workdir)
-    - [3.5 VOLUME](#35-volume)
-    - [3.6 USER](#36-user)
-      - [Note:](#note)
-    - [3.7 ONBUILD](#37-onbuild)
-  - [4 Good demo](#4-good-demo)
-  - [5 Basic steps to running Docker file with docker cli:](#5-basic-steps-to-running-docker-file-with-docker-cli)
-  - [6 Contributing guide](#6-contributing-guide)
-  - [7 References:](#7-references)
+- [1 Background](#s1-background)
+- [2 Dockerfile's practices](#s2-dockerfiles-practices)
+    - [2.1 Use minimal base images](#s2.1-use-minimal-base-images)
+    - [2.2 Use explicit tags for the base image.](#s2.2-use-explicit-tags-for-the-base-image)
+    - [2.3 Leverage layer caching](#s2.3-leverage-layer-caching)
+    - [2.4 Consolidate related operations](#2.4-consolidate-related-operations)
+    - [2.5 Remove unnecessary artifacts](#s2.5-remove-unnecessary-artifacts)
+    - [2.6 Use specific COPY instructions](#s2.6-use-specific-copy-instructions)
+    - [2.7 Document your Dockerfile](#s2.7-document-your-dockerfile)
+    - [2.8 Use .dockerignore file](#s2.8-use-dockerignore-file)
+    - [2.9 Test your image](#s2.9-test-your-image)
+    - [2.10 ADD or COPY](#s2.10-add-or-copy)
+- [3 Security practices:](#s3-security-practices)
+    - [3.1 Use environment variables for configuration](#s3.1-use-environment-variables-for-configuration)
+        - [3.1.1 Setting Dynamic Environment Values (ARG vs ENV)](#s3.1.1-setting-dynamic-environment-values-arg-vs-env)
+    - [3.3 Set the correct container user](#s3.3-set-the-correct-container-user)
+    - [3.4 Create a non-root user in the Dockerfile](#s3.4-create-a-non-root-user-in-the-dockerfile)
+    - [3.5 Avoid running containers with root privileges](#s3.5-avoid-running-containers-with-root-privileges)
+- [4 Other references:](#s4-other-references)
+    - [4.1 EXPOSE](#s4.1-expose)
+    - [4.2 ENTRYPOINT vs CMD vs RUN](#s4.2-entrypoint-vs-cmd-vs-run)
+    - [4.3 Docker Image vs Docker Containers:](#s4.3-docker-image-vs-docker-containers)
+        - [4.3.1 Docker Image:](#s4.3.1-docker-image)
+        - [4.3.2 Docker Container:](#s4.3.2-docker-container)
+        - [4.3.3 Docker Image vs Containers](#s4.3.3-docker-image-vs-containers)
+    - [4.4 WORKDIR](#s4.4-workdir)
+    - [4.5 VOLUME](#s4.5-volume)
+    - [4.6 USER](#s4.6-user)
+    - [4.7 ONBUILD](#s4.7-onbuild)
+- [5 Good demo](#s5-good-demo)
+- [6 Basic steps to running Docker file with docker cli:](#s6-basic-steps-to-running-docker-file-with-docker-cli)
+- [7 Contributing](#s7-contributing)
+    - [7.1 Contributing guide](#s7.1-contributing-guide)
+    - [7.2 Acknowledgement](#s7.2-acknowledgement)
+- [8 References:](#s8-references)
  
 </details>
 
 ---
 
-## 1 Background
+## 1. Background
 
 <a id="s1-background"></a>
 
@@ -79,12 +80,12 @@ Docker is an open-source platform that enables you to automate the deployment, s
 
 This guide is a list of practices I have collected, while learning Docker, for building your own Dockerfile. If you have new tips, feel free to contribute via [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md). Hope this helps!
 
-## 2 Dockerfile's practices
-<a id="s2-dockerfile-practices"></a>
+## 2. Dockerfile's practices
+<a id="s2-dockerfiles-practices"></a>
 
 ### 2.1 Use minimal base images
 
-<a id="s2.1-minimal-base-image"></a>
+<a id="s2.1-use-minimal-base-images"></a>
 
 Start with a minimal base image that contains only the necessary dependencies for your application. Using a smaller image reduces the image size and improves startup time.
 
@@ -111,7 +112,7 @@ References:
   
 ### 2.2 Use explicit tags for the base image.
 
-<a id="s2.2-base-image-explicit-tags"></a>
+<a id="s2.2-use-explicit-tags-for-the-base-image"></a>
 
 
 Use explicit tags for the base image instead of generic ones like 'latest' to ensure the same base image is used consistently across different environments.
@@ -194,7 +195,7 @@ In this improved example, we take advantage of layer caching by separating the s
 
 ### 2.4 Consolidate related operations
 
-<a id="s2.4-consolidate-related-operations"></a>
+<a id="2.4-consolidate-related-operations"></a>
 
 Minimize the number of layers by combining related operations into a single instruction. For example, instead of installing multiple packages in separate `RUN` instructions, group them together using a single RUN instruction.
 
@@ -338,143 +339,9 @@ COPY app.py requirements.txt /app/
 
 In this improved example, specific files (app.py and requirements.txt) are copied into a designated directory (/app). By explicitly specifying the required files, you ensure that only the necessary files are included in the image. This approach helps keep the image size minimal and avoids exposing any unwanted or sensitive files to the container.
 
+### 2.7 Document your Dockerfile
 
-### 2.7 Set the correct container user 
-
-<a id="s2.7-set-the-correct-container-user"></a>
-
-By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the USER instruction.
-
-No:
-
-```Dockerfile
-FROM ubuntu:20.04
-
-# Set working directory
-WORKDIR /app
-
-# Copy application files
-COPY . /app
-
-# Set container user as root
-USER root
-
-# Run the application
-CMD ["python3", "app.py"]
-```
-
-In this example, the container user is set to root using the USER instruction. Running the container as the root user can pose security risks, as any malicious code or vulnerability exploited within the container would have elevated privileges.
-
-Yes:
-
-```Dockerfile
-FROM ubuntu:20.04
-
-# Set working directory
-WORKDIR /app
-
-# Copy application files
-COPY . /app
-
-# Create a non-root user
-RUN groupadd -r myuser && useradd -r -g myuser myuser
-
-# Set ownership and permissions
-RUN chown -R myuser:myuser /app
-
-# Switch to the non-root user
-USER myuser
-
-# Run the application
-CMD ["python3", "app.py"]
-```
-
-In this improved example, a dedicated non-root user (myuser) is created using the useradd and groupadd commands. The ownership and permissions of the /app directory are changed to the non-root user using chown. Finally, the USER instruction switches to the non-root user before running the application.
-
-
-### 2.8 Use environment variables for configuration
-
-<a id="s2.8-use-environment-variables-for-configuration"></a>
-
-Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
-
-No:
-```Dockerfile
-FROM ubuntu:20.04
-
-# Set configuration values directly
-ENV DB_HOST=localhost
-ENV DB_PORT=3306
-ENV DB_USER=myuser
-ENV DB_PASSWORD=mypassword
-
-# Run the application
-CMD ["python3", "app.py"]
-```
-
-In this example, configuration values are directly set as environment variables using the ENV instruction in the Dockerfile. This approach has a few drawbacks:
-
-- Configuration values are hardcoded in the Dockerfile, making it less flexible and harder to change without modifying the file itself.
-- Sensitive information, such as passwords or API keys, is exposed in plain text in the Dockerfile, which is not secure.
-
-Yes:
-
-```Dockerfile
-FROM ubuntu:20.04
-
-# Set default configuration values
-ENV DB_HOST=localhost
-ENV DB_PORT=3306
-ENV DB_USER=defaultuser
-ENV DB_PASSWORD=defaultpassword
-
-# Run the application
-CMD ["python3", "app.py"]
-```
-
-In this improved example, default configuration values are set as environment variables, but they are kept generic and non-sensitive. This approach provides a template for configuration that can be customized when running the container.
-
-To securely provide sensitive configuration values, you can pass them as environment variables during runtime using the -e flag with the docker run command or by using a secrets management solution like Docker Secrets or environment-specific .env files.
-
-For example, when running the container, you can override the default values:
-
-```console
-docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage
-```
-
-#### 2.8.1 Setting Dynamic Environment Values (ARG vs ENV)
-
-<a id="s2.8.1-set-dynamic-env-values"></a>
-
-Dockerfile doesn't provide a dynamic tool to set an ENV value during the build process. However, there's a solution to this problem. We have to use ARG. ARG values don't work in the same way as ENV, as we can’t access them anymore once the image is built. 
-
-![image](https://github.com/chrislevn/dockerfile-practices/assets/32094007/b45d08b5-6bb4-44db-bf0c-2a8b1d8e7ed6)
-
-Let's see how we can work around this issue:
-
-```Dockerfile
-ARG name
-ENV env_name $name
-```
-
-We'll introduce the name ARG variable. Then we'll use it to assign a value to the env_name environment variable using ENV.
-When we want to set this argument, we'll pass it with the –build-arg flag:
-
-```console
-docker build -t baeldung_greetings --build-arg name=Christopher .
-```
-
-Now we'll run our container. We should see:
-
-```console 
-Hello Christopher
-```
-
-Reference: [https://www.baeldung.com/ops/dockerfile-env-variable](https://www.baeldung.com/ops/dockerfile-env-variable)
-
-### 2.9 Document your Dockerfile
-
-<a id="s2.9-document-your-dockerfile"></a>
+<a id="s2.7-document-your-dockerfile"></a>
 
 Include comments in your Dockerfile to provide context and explanations for the various instructions. This helps other developers understand the purpose and functionality of the Dockerfile.
 
@@ -532,9 +399,9 @@ In this improved example, the Dockerfile is better documented:
 - The `EXPOSE` instruction documents the port that should be exposed for accessing the application.
 
 
-### 2.10 Use .dockerignore file
+### 2.8 Use .dockerignore file
 
-<a id="s2.10-use-dockerignore"></a>
+<a id="s2.8-use-dockerignore-file"></a>
 
 The .dockerignore file allow you to exclude files the context like a .gitignore file allow you to exclude files from your git repository.
 It helps to make build faster and lighter by excluding from the context big files or repository that are not used in the build.
@@ -579,9 +446,9 @@ In this improved example, a `.dockerignore` file is used to exclude unnecessary 
 The `.dockerignore` file in this example excludes the `.git` directory, the `node_modules` directory (common for Node.js projects), and files with extensions `.log` and `.tmp`. These files and directories are typically not needed in the final image and can be safely ignored.
 
 
-### 2.11 Test your image
+### 2.9 Test your image
 
-<a id="s2.11-test-your-image"></a>
+<a id="s2.9-test-your-image"></a>
 
 After building your Docker image, run it in a container to verify that everything works as expected. This ensures that your image is functional and can be used with confidence.
 
@@ -625,9 +492,9 @@ In this improved example, a dedicated step is added to run tests within the Dock
 It's important to note that this example assumes the tests are included in a `tests` directory within the project structure. Adjust the command (`python3 -m unittest discover tests`) as per your project's testing setup.
 
 
-### 2.12 ADD or COPY
+### 2.10 ADD or COPY
 
-<a id="s2.12-add=or-copy"></a>
+<a id="s2.10-add-or-copy"></a>
 
 Although `ADD` and `COPY` are functionally similar, generally speaking, `COPY` is preferred. That’s because it’s more transparent than `ADD`. `COPY` only supports the basic copying of local files into the container, while `ADD` has some features (like local-only tar extraction and remote URL support) that are not immediately obvious. Consequently, the best use for `ADD` is local tar file auto-extraction into the image, as in `ADD rootfs.tar.xz /.`
 
@@ -671,9 +538,155 @@ For more information about ADD or COPY, see the following:
 
 Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.)
 
-### 2.13 Create a non-root user in the Dockerfile
+## 3. Security practices
 
-<a id="s2.13-create-non-root-user"></a>
+<a id="s3-security-practices"></a>
+
+### 3.1 Use environment variables for configuration
+
+<a id="s3.1-use-environment-variables-for-configuration"></a>
+
+Instead of hardcoding configuration values inside the Dockerfile, use environment variables. This allows for greater flexibility and easier configuration management. You can set these variables when running the container.
+
+No:
+```Dockerfile
+FROM ubuntu:20.04
+
+# Set configuration values directly
+ENV DB_HOST=localhost
+ENV DB_PORT=3306
+ENV DB_USER=myuser
+ENV DB_PASSWORD=mypassword
+
+# Run the application
+CMD ["python3", "app.py"]
+```
+
+In this example, configuration values are directly set as environment variables using the ENV instruction in the Dockerfile. This approach has a few drawbacks:
+
+- Configuration values are hardcoded in the Dockerfile, making it less flexible and harder to change without modifying the file itself.
+- Sensitive information, such as passwords or API keys, is exposed in plain text in the Dockerfile, which is not secure.
+
+Yes:
+
+```Dockerfile
+FROM ubuntu:20.04
+
+# Set default configuration values
+ENV DB_HOST=localhost
+ENV DB_PORT=3306
+ENV DB_USER=defaultuser
+ENV DB_PASSWORD=defaultpassword
+
+# Run the application
+CMD ["python3", "app.py"]
+```
+
+In this improved example, default configuration values are set as environment variables, but they are kept generic and non-sensitive. This approach provides a template for configuration that can be customized when running the container.
+
+To securely provide sensitive configuration values, you can pass them as environment variables during runtime using the -e flag with the docker run command or by using a secrets management solution like Docker Secrets or environment-specific .env files.
+
+For example, when running the container, you can override the default values:
+
+```console
+docker run -e DB_HOST=mydbhost -e DB_PORT=5432 -e DB_USER=myuser -e DB_PASSWORD=mypassword myimage
+```
+
+#### 3.1.1 Setting Dynamic Environment Values (ARG vs ENV)
+
+<a id="s3.1.1-setting-dynamic-environment-values-arg-vs-env"></a>
+
+Dockerfile doesn't provide a dynamic tool to set an ENV value during the build process. However, there's a solution to this problem. We have to use ARG. ARG values don't work in the same way as ENV, as we can’t access them anymore once the image is built. 
+
+![image](https://github.com/chrislevn/dockerfile-practices/assets/32094007/b45d08b5-6bb4-44db-bf0c-2a8b1d8e7ed6)
+
+Let's see how we can work around this issue:
+
+```Dockerfile
+ARG name
+ENV env_name $name
+```
+
+We'll introduce the name ARG variable. Then we'll use it to assign a value to the env_name environment variable using ENV.
+When we want to set this argument, we'll pass it with the –build-arg flag:
+
+```console
+docker build -t baeldung_greetings --build-arg name=Christopher .
+```
+
+Now we'll run our container. We should see:
+
+```console 
+Hello Christopher
+```
+
+Reference: [https://www.baeldung.com/ops/dockerfile-env-variable](https://www.baeldung.com/ops/dockerfile-env-variable)
+
+### 3.3 Set the correct container user
+
+<a id="s3.3-set-the-correct-container-user"></a>
+
+By default, Docker runs containers as the root user. To improve security, create a dedicated user for running your application within the container and switch to that user using the `USER` instruction.
+
+No:
+
+```Dockerfile
+FROM ubuntu:20.04
+
+# Set working directory
+WORKDIR /app
+
+# Copy application files
+COPY . /app
+
+# Set container user as root
+USER root
+
+# Run the application
+CMD ["python3", "app.py"]
+```
+
+In this example, the container user is set to root using the USER instruction. Running the container as the root user can pose security risks, as any malicious code or vulnerability exploited within the container would have elevated privileges.
+
+Why it's important:
+
+- Running processes within a container as a non-root user minimizes the potential damage that can be caused by security vulnerabilities
+
+-  Following the principle of least privilege, a non-root user only has access to the resources and permissions necessary to perform its intended tasks. This reduces the risk of accidental or intentional misuse of privileged operations within the container.
+
+- Running containers with a non-root user adds an additional layer of isolation between the containerized application and the host system. This isolation helps protect the host system from unintended changes or malicious activities within the container.
+
+-  Many organizations and regulatory frameworks require the use of non-root users for security and compliance purposes. Adhering to these best practices can help meet these requirements and ensure that your containerized applications pass security audits.
+
+Yes:
+
+```Dockerfile
+FROM ubuntu:20.04
+
+# Set working directory
+WORKDIR /app
+
+# Copy application files
+COPY . /app
+
+# Create a non-root user
+RUN groupadd -r myuser && useradd -r -g myuser myuser
+
+# Set ownership and permissions
+RUN chown -R myuser:myuser /app
+
+# Switch to the non-root user
+USER myuser
+
+# Run the application
+CMD ["python3", "app.py"]
+```
+
+In this improved example, a dedicated non-root user (myuser) is created using the useradd and groupadd commands. The ownership and permissions of the /app directory are changed to the non-root user using chown. Finally, the USER instruction switches to the non-root user before running the application.
+
+### 3.4 Create a non-root user in the Dockerfile
+
+<a id="s3.4-create-a-non-root-user-in-the-dockerfile"></a>
 
 Start your Dockerfile with a base image that already has a non-root user defined. This will ensure that your container starts with a non-root user by default
 
@@ -686,9 +699,9 @@ USER nonroot
 ```
 Ensure that the non-root user has the necessary permissions to execute the required commands and access the required files and directories within the container. Use the RUN instruction with `chown` or `chmod` to adjust the ownership and permissions as needed.
 
-### 2.14 Avoid running containers with root privileges
+### 3.5 Avoid running containers with root privileges
 
-<a id="s2.14-avoid-running-containers-with-root"></a>
+<a id="s3.5-avoid-running-containers-with-root-privileges"></a>
 
 When starting the container, avoid running it as the root user. Instead, specify the `non-root` user as the user to run the container using the `--user` flag with the docker run command or the equivalent in your container orchestration platform.
 
@@ -702,13 +715,13 @@ Why it's important:
 
 -  Many organizations and regulatory frameworks require the use of non-root users for security and compliance purposes. Adhering to these best practices can help meet these requirements and ensure that your containerized applications pass security audits.
 
-## Other references: 
+## 4. Other references: 
 
-<a id="s3-others"></a>
+<a id="s4-other-references"></a>
 
-### 3.1 EXPOSE
+### 4.1 EXPOSE
 
-<a id="s3.1-expose"></a>
+<a id="s4.1-expose"></a>
 
 The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. EXPOSE does not make the ports of the container accessible to the host.
 
@@ -730,9 +743,9 @@ docker run -p 8080:80 myimage
 ```
 
 
-### 3.2 ENTRYPOINT vs CMD vs RUN
+### 4.2 ENTRYPOINT vs CMD vs RUN
 
-<a id="s3.2-entrypoint-cmd-run"></a>
+<a id="s4.2-entrypoint-vs-cmd-vs-run"></a>
 
 - `ENTRYPOINT`: The `ENTRYPOINT` instruction specifies the primary command to be executed when a container is run from an image. It sets the entrypoint for the container, which means it provides the default executable for the container. It is typically used to specify the main command or process that the container should run. You can use `ENTRYPOINT` in either the shell form (as a command string) or the exec form (as an array of strings).
 
@@ -812,23 +825,29 @@ The `CMD` instruction provides default arguments to the `ENTRYPOINT` command. In
 
 When you build and run the container, the Python application specified by app.py will be executed as the primary command. However, if you provide additional arguments when running the container, they will override the default arguments specified by `CMD`.
 
+### 4.3 Docker Image vs Docker Containers: 
 
-### 3.3 Docker Image vs Docker Containers: 
-
-<a id="s3.3-image-vs-containers"></a>
+<a id="s4.3-docker-image-vs-docker-containers"></a>
 
 ![image](https://github.com/chrislevn/dockerfile-practices/assets/32094007/05fa9dc6-82b6-4fd9-be27-759d46632e25)
 
 
-#### Docker Image:
+#### 4.3.1 Docker Image:
+
+<a id="s4.3.1-docker-image"></a>
 
 A Docker image is a lightweight, standalone, and executable package that contains everything needed to run a piece of software, including the code, runtime environment, libraries, dependencies, and system tools. It is created from a Dockerfile, which specifies the instructions for building the image. Images are immutable, meaning they are read-only and cannot be modified once created. You can think of an image as a blueprint or template for creating containers.
 
-#### Docker Container:
+#### 4.3.2 Docker Container:
+
+<a id="s4.3.2-docker-container"></a>
 
 A Docker container is a running instance of an image. It is a lightweight and isolated runtime environment that encapsulates an application and its dependencies. Containers are created from Docker images and can be started, stopped, paused, restarted, and deleted as needed. Each container runs in isolation, utilizing the host system's resources efficiently while providing a consistent environment for the application to run. Containers are transient and can be recreated easily from the corresponding image.
 
-#### Docker Image vs Containers
+#### 4.3.3 Docker Image vs Containers
+
+<a id="s4.3.3-docker-image-vs-containers"></a>
+
 - The key difference between a Docker image Vs a container is that a Docker image is a read-only immutable template that defines how a container will be realized. A Docker container is a runtime instance of a Docker image that gets created when the $ docker run command is implemented.  
 - Before the docker container can even exist docker templates/images are built using $ docker build CLI. 
 - Docker image templates can exist in isolation but containers can't exist without images.  
@@ -838,9 +857,9 @@ A Docker container is a running instance of an image. It is a lightweight and is
 
 Reference: https://www.knowledgehut.com/blog/devops/docker-vs-container
 
-### 3.4 WORKDIR
+### 4.4 WORKDIR
 
-<a id="s3.4-workdir"></a>
+<a id="s4.4-workdir"></a>
 
 In a Dockerfile, the `WORKDIR` instruction is used to set the working directory for any subsequent instructions in the Dockerfile. It is similar to the cd command in Linux or Unix systems.
 
@@ -873,9 +892,9 @@ For clarity and reliability, you should always use absolute paths for your WORKD
 
 For more information about USER, see [Dockerfile reference for the USER instruction](https://docs.docker.com/engine/reference/builder/#user).
 
-### 3.5 VOLUME
+### 4.5 VOLUME
 
-<a id="s3.5-volume"></a>
+<a id="s4.5-volume"></a>
 
 In a Dockerfile, the `VOLUME` instruction is used to create a mount point and designate a directory as a volume for persistent data storage or sharing between containers and the host system.
 
@@ -913,8 +932,10 @@ The `VOLUME` instruction should be used to expose any database storage area, con
 
 For more information about `VOLUME`, see [Dockerfile reference for the `VOLUME` instruction](https://docs.docker.com/engine/reference/builder/#volume).
 
+### 4.6 USER
 
-### 3.6 USER
+<a id="s4.6-user"></a>
+
 In a Dockerfile, the USER instruction is used to specify the user or UID (user identifier) that the container should run as when executing subsequent instructions.
 
 ```Dockerfile
@@ -964,9 +985,9 @@ For more information about `USER`, see [Dockerfile reference for the `USER` inst
 
 <a id="s3.6-user"></a>
 
-### 3.7 ONBUILD
+### 4.7 ONBUILD
 
-<a id="s3.7-onbuild"></a>
+<a id="s4.7-onbuild"></a>
 
 The `ONBUILD` instruction is used to add triggers to an image that will be executed when the image is used as the base for another Docker image. It allows you to define actions that should be performed in child images without modifying the parent image.
 
@@ -1012,9 +1033,9 @@ For more information about ONBUILD, see [Dockerfile reference for the `ONBUILD` 
 Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 
 
-## 4 Good demo
+## 5. Good demo
 
-<a id="s4-good-demo"></a>
+<a id="s5-good-demo"></a>
 
 ```Dockerfile
 # Use a suitable base image
@@ -1058,10 +1079,11 @@ In this example, we follow several best practices:
 -Environment variables are set for configuring the database connection.
 -The `CMD` instruction specifies the command to run when the container starts.
 
+More demos on [https://github.com/chrislevn/dockerfile-practices/tree/main/demo](https://github.com/chrislevn/dockerfile-practices/tree/main/demo)
 
-## 5 Basic steps to running Docker file with docker cli: 
+## 6. Basic steps to running Docker file with docker cli: 
 
-<a id="s5-run-with-docker-cli"></a>
+<a id="s6-basic-steps-to-running-docker-file-with-docker-cli"></a>
 
 - Make sure you have Docker installed and running on your system. You can check this by running the docker version command in your terminal or command prompt. If you have Docker Destop, make sure it is running. 
 - Create a Dockerfile in your project directory. The Dockerfile contains instructions for building your Docker image. 
@@ -1090,15 +1112,28 @@ docker run -it -p 8000:8000 myapp:1.0
 
 ---
 
-## 6 Contributing guide
+## 7. Contributing
 
-<a id="s6-contributing-guide"></a>
+<a id="s7-contributing"></a>
+
+### Contributing guide
+
+<a id="s7.1-contributing-guide"></a>
 
 [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
-## 7 References: 
+### Acknowledgement
 
-<a id="s7-references"></a>
+<a id="s7.2-acknowledgement"></a>
+
+<details markdown="1"> 
+  <summary>Chap 2</summary>
+- [Thinh Nguyen](https://github.com/ducthinh993)
+</details>
+
+## 8. References: 
+
+<a id="s8-references"></a>
 
 - [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 - [https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4](https://medium.com/@adari.girishkumar/dockerfile-and-best-practices-for-writing-dockerfile-diving-into-docker-part-5-5154d81edca4)
