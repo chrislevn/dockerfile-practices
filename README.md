@@ -33,6 +33,10 @@ Github: [https://github.com/chrislevn/dockerfile-practices](https://github.com/c
     * [3.1 EXPOSE](#s3.1-expose)
     * [3.2 ENTRYPOINT vs CMD vs RUN](#s3.2-entrypoint-cmd-run)
     * [3.3 Docker Image vs Containers](#s3.3-image-vs-containers)
+    * [3.4 WORKDIR](#s3.4-workdir)
+    * [3.5 VOLUME](#s3.5-volume)
+    * [3.6 USER](#s3.6-user)
+    * [3.7 ONBUILD](#s3.7-onbuild)
 - [4 Good demo](#s4-good-demo)
 - [5 Running Docker file with docker cli](#s5-run-with-docker-cli)
 - [6 Contributing guide](#s6-contributing-guide)
@@ -265,7 +269,7 @@ pipreqs --force /<your_project_root_path>/
 - ```cat requirements.txt | xargs -n 1 pip install```
 <br/>
 Note: -a parameter is not available under MacOS, so old cat is more portable.
-Reference: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt
+Reference: [https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt](https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt)
 
 <a id="s2.5-remove-unnecessary-artifacts"></a>
 
@@ -719,6 +723,175 @@ Docker Image vs Containers
 Reference: https://www.knowledgehut.com/blog/devops/docker-vs-container
 <a id="s3.3-image-vs-containers"></a>
 
+### 3.4 WORKDIR
+In a Dockerfile, the `WORKDIR` instruction is used to set the working directory for any subsequent instructions in the Dockerfile. It is similar to the cd command in Linux or Unix systems.
+
+```Dockerfile
+WORKDIR /path/to/directory
+```
+
+Here, `/path/to/directory` is the absolute or relative path to the directory you want to set as the working directory. If the directory does not exist, Docker will create it.
+
+The WORKDIR instruction affects subsequent instructions like `RUN`, `CMD`, `COPY`, and `ADD`. Any relative paths specified in these instructions will be resolved relative to the working directory set by `WORKDIR`.
+
+It's recommended to use absolute paths for better clarity and predictability in your Dockerfile.
+
+Here's an example of how `WORKDIR` can be used in a Dockerfile:
+
+```Dockerfile
+FROM ubuntu:latest
+
+WORKDIR /app
+
+COPY . /app
+
+RUN apt-get update && \
+    apt-get install -y python3
+
+CMD ["python3", "app.py"]
+```
+
+For clarity and reliability, you should always use absolute paths for your WORKDIR. Also, you should use `WORKDIR` instead of proliferating instructions like `RUN cd … && do-something`, which are hard to read, troubleshoot, and maintain.
+
+For more information about USER, see [Dockerfile reference for the USER instruction](https://docs.docker.com/engine/reference/builder/#user).
+
+<a id="s3.4-workdir"></a>
+
+### 3.5 VOLUME
+
+In a Dockerfile, the `VOLUME` instruction is used to create a mount point and designate a directory as a volume for persistent data storage or sharing between containers and the host system.
+
+The syntax for the `VOLUME` instruction is as follows:
+
+```Dockerfile
+VOLUME ["/path/to/volume"]
+```
+
+Here, "/path/to/volume" specifies the absolute path to the directory that you want to designate as a volume.
+
+When you run a container using an image that includes a VOLUME instruction, Docker creates a mount point at the specified path and sets it as a volume. Any data written to that directory inside the container will be stored in the volume. The data in the volume persists even after the container is stopped or removed.
+
+Volumes are typically used for storing databases, logs, configuration files, or any other data that needs to persist beyond the lifecycle of a container. They provide a way to separate the storage of data from the container itself, making it easier to manage and migrate containers without losing important data.
+
+You can specify multiple VOLUME instructions in a Dockerfile to create multiple volumes.
+
+Here's an example of how the VOLUME instruction can be used in a Dockerfile:
+
+```Dockerfile
+FROM ubuntu:latest
+
+VOLUME ["/app/data", "/app/logs"]
+
+WORKDIR /app
+
+COPY . /app
+
+CMD ["python3", "app.py"]
+```
+
+In this example, the `VOLUME` instruction creates two volumes: `/app/data` and `/app/logs`. Any data written to these directories inside the container will be stored in the respective volumes. These volumes can then be accessed or managed using Docker commands or through container orchestration tools.
+
+The `VOLUME` instruction should be used to expose any database storage area, configuration storage, or files and folders created by your Docker container. You are strongly encouraged to use VOLUME for any combination of mutable or user-serviceable parts of your image.
+
+For more information about `VOLUME`, see [Dockerfile reference for the `VOLUME` instruction](https://docs.docker.com/engine/reference/builder/#volume).
+
+<a id="s3.5-volume"></a>
+
+### 3.6 USER
+In a Dockerfile, the USER instruction is used to specify the user or UID (user identifier) that the container should run as when executing subsequent instructions.
+
+```Dockerfile
+USER user[:group]
+```
+
+Here, user can be either the username or the UID of the user you want to set as the user for the container. Optionally, you can specify group to set the group for the user as well.
+
+The USER instruction is often used to run the container with a non-root user for security reasons. By default, Docker containers run as the root user (UID 0), which can pose security risks. Running the container as a non-root user helps to minimize the impact of potential security vulnerabilities.
+
+You can specify the user by either using the username or the UID. If you provide a username, Docker will try to resolve it to the corresponding UID and GID (group identifier) within the container. If you provide a UID directly, Docker will use that UID and assign it to the user.
+
+Here's an example of how the USER instruction can be used in a Dockerfile:
+
+```Dockerfile 
+FROM ubuntu:latest
+
+RUN groupadd -r mygroup && useradd -r -g mygroup myuser
+
+WORKDIR /app
+
+COPY . /app
+
+USER myuser
+
+CMD ["python3", "app.py"]
+```
+
+In this example, the Dockerfile creates a new user named myuser and a group named mygroup. The USER instruction sets myuser as the user for subsequent instructions, starting from the CMD instruction. This ensures that the container runs with the specified user rather than the root user.
+
+If a service can run without privileges, use USER to change to a non-root user. Start by creating the user and group in the Dockerfile with something like the following example:
+
+```Dockerfile
+RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres
+```
+
+#### Note: 
+Consider an explicit UID/GID.
+
+Users and groups in an image are assigned a non-deterministic UID/GID in that the “next” UID/GID is assigned regardless of image rebuilds. So, if it’s critical, you should assign an explicit UID/GID.
+
+Avoid installing or using sudo as it has unpredictable TTY and signal-forwarding behavior that can cause problems. If you absolutely need functionality similar to `sudo`, such as initializing the daemon as `root` but running it as non-root, consider using “gosu”.
+
+Lastly, to reduce layers and complexity, avoid switching `USER` back and forth frequently.
+
+For more information about `USER`, see [Dockerfile reference for the `USER` instruction](https://docs.docker.com/engine/reference/builder/#user).
+
+<a id="s3.6-user"></a>
+
+### 3.7 ONBUILD
+The `ONBUILD` instruction is used to add triggers to an image that will be executed when the image is used as the base for another Docker image. It allows you to define actions that should be performed in child images without modifying the parent image.
+
+The syntax for the `ONBUILD` instruction is as follows:
+
+```Dockerfile
+ONBUILD <INSTRUCTION>
+```
+
+Here, `<INSTRUCTION>` can be any valid Dockerfile instruction like `RUN`, `COPY`, `CMD`, etc. It represents the action or instruction that should be executed in the child image.
+
+When an image with an ONBUILD instruction is used as the base image for another Docker image, the specified instruction is recorded and saved in the metadata of the parent image. Then, when the child image is built, Docker triggers and executes those recorded instructions as part of the child image build process.
+
+The `ONBUILD` instruction is typically used to automate certain tasks or actions that are common to many derived images. For example, you can use it to specify actions like copying files into the image, setting environment variables, or running commands.
+
+Here's an example to illustrate the usage of `ONBUILD` in a Dockerfile:
+
+```Dockerfile
+FROM ubuntu:latest
+
+ONBUILD COPY . /app
+ONBUILD RUN make /app
+
+CMD ["./app"]
+```
+
+In this example, the parent image specifies two `ONBUILD` instructions. The first `ONBUILD` instruction records the `COPY . /app` instruction, which copies files from the context directory into the `/app` directory of the child image. The second `ONBUILD` instruction records the `RUN` make `/app` instruction, which builds the application in the child image.
+
+When the child image is built using this parent image, Docker will automatically execute the recorded `COPY . /app` and `RUN make /app` instructions in the child image build context. Finally, the `CMD` instruction will run the built application in the child image.
+
+An `ONBUILD` command executes after the current Dockerfile build completes. `ONBUILD` executes in any child image derived `FROM` the current image. Think of the `ONBUILD` command as an instruction that the parent Dockerfile gives to the child Dockerfile.
+
+A Docker build executes `ONBUILD` commands before any command in a child Dockerfile.
+
+`ONBUILD` is useful for images that are going to be built FROM a given image. For example, you would use ONBUILD for a language stack image that builds arbitrary user software written in that language within the Dockerfile, as you can see in Ruby’s `ONBUILD` variants.
+
+Images built with ONBUILD should get a separate tag. For example, `ruby:1.9-onbuild` or `ruby:2.0-onbuild`.
+
+Be careful when putting `ADD` or `COPY` in `ONBUILD`. The onbuild image fails catastrophically if the new build’s context is missing the resource being added. Adding a separate tag, as recommended above, helps mitigate this by allowing the Dockerfile author to make a choice.
+
+For more information about ONBUILD, see [Dockerfile reference for the `ONBUILD` instruction](https://docs.docker.com/engine/reference/builder/#onbuild).
+
+Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+
+<a id="s3.7-onbuild"></a>
 
 ## 4 Good demo
 
