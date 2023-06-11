@@ -32,33 +32,40 @@ Simple Demos running Docker with Python: [https://github.com/chrislevn/dockerfil
 <details markdown="1"> 
   <summary>Table of Contents</summary>
   
-- [1 Background](#s1-background)
-- [2. Dockerfile's practices](#s2-dockerfile-practices)
-    * [2.1 Use minimal base images](#s2.1-minimal-base-image)
-    * [2.2 Use explicit tags for the base image.](#s2.2-base-image-explicit-tags)
-    * [2.3 Leverage layer caching](#s2.3-leverage-layer-caching)
-    * [2.4 Consolidate related operations](#s2.4-consolidate-related-operations)
-    * [2.5 Remove unnecessary artifacts](#s2.5-remove-unnecessary-artifacts)
-    * [2.6 Use specific COPY instructions](#s2.6-use-specific-copy-instructions)
-    * [2.7 Set the correct container user](#s2.7-set-the-correct-container-user)
-    * [2.8 Use environment variables for configuration](#s2.8-use-environment-variables-for-configuration)
-    * * [2.8.1 Setting Dynamic Environment Values](#s2.8.1-set-dynamic-env-values)
-    * [2.9 Document your Dockerfile](#s2.9-document-your-dockerfile)
-    * [2.10 Use .dockerignore file](#s2.10-use-dockerignore)
-    * [2.11 Test your image](#s2.11-test-your-image)
-    * [2.12 ADD or COPY](#s2.12-add=or-copy)
-- [3 Other references](#s3-others)
-    * [3.1 EXPOSE](#s3.1-expose)
-    * [3.2 ENTRYPOINT vs CMD vs RUN](#s3.2-entrypoint-cmd-run)
-    * [3.3 Docker Image vs Containers](#s3.3-image-vs-containers)
-    * [3.4 WORKDIR](#s3.4-workdir)
-    * [3.5 VOLUME](#s3.5-volume)
-    * [3.6 USER](#s3.6-user)
-    * [3.7 ONBUILD](#s3.7-onbuild)
-- [4 Good demo](#s4-good-demo)
-- [5 Running Docker file with docker cli](#s5-run-with-docker-cli)
-- [6 Contributing guide](#s6-contributing-guide)
-- [7 References](#s7-references)
+- [Good practices on writing Dockerfile](#good-practices-on-writing-dockerfile)
+  - [1 Background](#1-background)
+  - [2 Dockerfile's practices](#2-dockerfiles-practices)
+    - [2.1 Use minimal base images](#21-use-minimal-base-images)
+    - [2.2 Use explicit tags for the base image.](#22-use-explicit-tags-for-the-base-image)
+    - [2.3 Leverage layer caching](#23-leverage-layer-caching)
+    - [2.4 Consolidate related operations](#24-consolidate-related-operations)
+    - [2.5 Remove unnecessary artifacts](#25-remove-unnecessary-artifacts)
+    - [2.6 Use specific COPY instructions](#26-use-specific-copy-instructions)
+    - [2.7 Set the correct container user](#27-set-the-correct-container-user)
+    - [2.8 Use environment variables for configuration](#28-use-environment-variables-for-configuration)
+      - [2.8.1 Setting Dynamic Environment Values (ARG vs ENV)](#281-setting-dynamic-environment-values-arg-vs-env)
+    - [2.9 Document your Dockerfile](#29-document-your-dockerfile)
+    - [2.10 Use .dockerignore file](#210-usedockerignore-file)
+    - [2.11 Test your image](#211-test-your-image)
+    - [2.12 ADD or COPY](#212-add-or-copy)
+    - [2.13 Create a non-root user in the Dockerfile](#213-create-a-non-root-user-in-the-dockerfile)
+    - [2.14 Avoid running containers with root privileges](#214-avoid-running-containers-with-root-privileges)
+  - [Other references:](#other-references)
+    - [3.1 EXPOSE](#31-expose)
+    - [3.2 ENTRYPOINT vs CMD vs RUN](#32-entrypoint-vs-cmd-vs-run)
+    - [3.3 Docker Image vs Docker Containers:](#33-docker-image-vs-docker-containers)
+      - [Docker Image:](#docker-image)
+      - [Docker Container:](#docker-container)
+      - [Docker Image vs Containers](#docker-image-vs-containers)
+    - [3.4 WORKDIR](#34-workdir)
+    - [3.5 VOLUME](#35-volume)
+    - [3.6 USER](#36-user)
+      - [Note:](#note)
+    - [3.7 ONBUILD](#37-onbuild)
+  - [4 Good demo](#4-good-demo)
+  - [5 Basic steps to running Docker file with docker cli:](#5-basic-steps-to-running-docker-file-with-docker-cli)
+  - [6 Contributing guide](#6-contributing-guide)
+  - [7 References:](#7-references)
  
 </details>
 
@@ -664,6 +671,36 @@ For more information about ADD or COPY, see the following:
 
 Reference: [https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#:~:text=COPY%20only%20supports%20the%20basic,rootfs.tar.xz%20%2F%20.)
 
+### 2.13 Create a non-root user in the Dockerfile
+
+<a id="s2.13-create-non-root-user"></a>
+
+Start your Dockerfile with a base image that already has a non-root user defined. This will ensure that your container starts with a non-root user by default
+
+If your base image doesn't provide a non-root user, you should create one in your Dockerfile using the USER and RUN instructions. Specify a unique username and a non-privileged user ID (UID) for the user. This can be achieved with the following lines in your Dockerfile:
+
+```Dockerfile
+RUN <instructions that require to run with root privileges>
+RUN addgroup --system nonroot && adduser --system --ingroup nonroot nonroot
+USER nonroot
+```
+Ensure that the non-root user has the necessary permissions to execute the required commands and access the required files and directories within the container. Use the RUN instruction with `chown` or `chmod` to adjust the ownership and permissions as needed.
+
+### 2.14 Avoid running containers with root privileges
+
+<a id="s2.14-avoid-running-containers-with-root"></a>
+
+When starting the container, avoid running it as the root user. Instead, specify the `non-root` user as the user to run the container using the `--user` flag with the docker run command or the equivalent in your container orchestration platform.
+
+Why it's important:
+
+- Running processes within a container as a non-root user minimizes the potential damage that can be caused by security vulnerabilities
+
+-  Following the principle of least privilege, a non-root user only has access to the resources and permissions necessary to perform its intended tasks. This reduces the risk of accidental or intentional misuse of privileged operations within the container.
+
+-  Running containers with a non-root user adds an additional layer of isolation between the containerized application and the host system. This isolation helps protect the host system from unintended changes or malicious activities within the container.
+
+-  Many organizations and regulatory frameworks require the use of non-root users for security and compliance purposes. Adhering to these best practices can help meet these requirements and ensure that your containerized applications pass security audits.
 
 ## Other references: 
 
