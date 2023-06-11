@@ -698,7 +698,7 @@ Why it's important:
 
 -  Following the principle of least privilege, a non-root user only has access to the resources and permissions necessary to perform its intended tasks. This reduces the risk of accidental or intentional misuse of privileged operations within the container.
 
--  Running containers with a non-root user adds an additional layer of isolation between the containerized application and the host system. This isolation helps protect the host system from unintended changes or malicious activities within the container.
+- Running containers with a non-root user adds an additional layer of isolation between the containerized application and the host system. This isolation helps protect the host system from unintended changes or malicious activities within the container.
 
 -  Many organizations and regulatory frameworks require the use of non-root users for security and compliance purposes. Adhering to these best practices can help meet these requirements and ensure that your containerized applications pass security audits.
 
