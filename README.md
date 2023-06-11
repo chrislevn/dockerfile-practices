@@ -314,16 +314,16 @@ COPY . /app
 
 In this example, the entire context directory, represented by . (dot), is copied into the image. This approach can inadvertently include unwanted files that may not be necessary for the application. It can bloat the image size and potentially expose sensitive files or credentials to the container.
 
+Yes: 
+
 ```Dockerfile
-Yes:  
-  FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-  # Create app directory
-  RUN mkdir /app
+# Create app directory
+RUN mkdir /app
 
-  # Copy only necessary files
-  COPY app.py requirements.txt /app/
-
+# Copy only necessary files
+COPY app.py requirements.txt /app/
 ```
 
 In this improved example, specific files (app.py and requirements.txt) are copied into a designated directory (/app). By explicitly specifying the required files, you ensure that only the necessary files are included in the image. This approach helps keep the image size minimal and avoids exposing any unwanted or sensitive files to the container.
