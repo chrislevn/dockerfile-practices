@@ -1,7 +1,5 @@
 # Create a ResrAPI with Docker and Python
 
-![Screenshot 2023-06-11 at 2 06 31 AM](https://github.com/chrislevn/dockerfile-practices/assets/32094007/21019967-12fd-4eaf-9d82-527362b86038)
-
 ## What it does
 - GET: get data as JSON `'message': 'GET request received'`
 - POST: send data as JSON
@@ -24,3 +22,5 @@
 - Make sure Docker is running
 - Run `docker build -t restapi . `
 - Run `docker run restapi`
+
+3. To have the image exists and removes itself, run `docker run --rm restapi`
