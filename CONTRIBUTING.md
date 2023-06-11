@@ -138,21 +138,21 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/chrisl
 include Setup of env, IDE and typical getting started instructions?
 
 -->
+- Check if there is any issues you want to resolve 
 
-### Improving The Documentation
-<!-- TODO
-Updating, improving and correcting the documentation
+#### README.md: 
+- Improve document by adding your parts or contribute to fix the issues. 
+- Remember to add corresponding tag in the section as well as table of content.
+- Make sure all the command are in corresponding coding block (``)
 
--->
+#### Demo: 
+- Contribute your demo in demo folder
+- Make sure to include your folder a README.md of what the demo does and how to run it. 
 
 ## Styleguides
-### Commit Messages
-<!-- TODO
 
--->
+More on Styleguides here: [https://google.github.io/styleguide/](https://google.github.io/styleguide/)
 
-## Join The Project Team
-<!-- TODO -->
 
 <!-- omit in toc -->
 ## Attribution
