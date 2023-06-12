@@ -611,7 +611,7 @@ We'll introduce the name ARG variable. Then we'll use it to assign a value to th
 When we want to set this argument, we'll pass it with the –build-arg flag:
 
 ```console
-docker build -t baeldung_greetings --build-arg name=Christopher .
+docker build -t image_name --build-arg name=Christopher .
 ```
 
 Now we'll run our container. We should see:
