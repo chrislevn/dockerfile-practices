@@ -1124,7 +1124,7 @@ docker run -it -p 8000:8000 myapp:1.0
 
 Docker Compose is a tool that allows you to define and manage multi-container Docker applications. It provides a way to describe the configuration of multiple services, networks, and volumes using a YAML file format. With Docker Compose, you can define a set of containers that make up your application, specify their configurations, and manage their lifecycle as a single unit.
 
-### 6.1.2 Docker compose vs Docker run
+#### 6.1.2 Docker compose vs Docker run
 
 <a id="s6.1.2-docker-compose-vs-docker-run"></a>
 
@@ -1144,7 +1144,7 @@ To run with docker run, we use
 docker run <IMAGE_NAME>:<TAG>
 ```
 
-### 6.1.3 Docker compose usage
+#### 6.1.3 Docker compose usage
 
 <a id="s6.1.3-docker-compose-usage"></a>
 
