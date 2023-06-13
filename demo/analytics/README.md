@@ -6,15 +6,27 @@
 Analytic top industries laid off with Python, Pandas, plotly and Docker
 
 ## How to run
-1. Check if the file is running properly locally
-- Creare `.env` file with PORT=<YOUR_DESIRED_PORT_NUMBER>
+1. Open a terminal or command prompt and navigate to the directory where your Dockerfile is located.
+2. Check if the file is running properly locally
 - Run `python3 app.py`
 
-2. Run the file with Docker
+3. Run the file with Docker
 - Make sure Docker is running
-- Run `docker build -t analytics . `
-- Run `docker run -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> analytics`
+- run `export PORT=<YOUR_DESIRED_PORT>`
+- export version 
+```bash
+export VERSION=$(cat version.txt)
+```
+- Run this code to build the Docker image
+```bash
+docker build -t analytics:$VERSION . 
+```
+- Run `docker compose up` to run Docker
 
-3. To have the image exists and removes itself, run `docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> analytics`
+4. To have the image exists and removes itself, run 
+
+```bash
+docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> analytics:$VERSION
+```
 
 Note: the data is in the directory now, but to reduce the image size, consider put your data on the cloud and retrive it with RestAPI. 
