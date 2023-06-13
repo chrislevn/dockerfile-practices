@@ -1500,11 +1500,11 @@ Note: This configuration assumes that your backend application containers (`app1
 
 <a id="s7-contributing"></a>
 
-### [Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
+### [7.1 Contributing guide](https://github.com/chrislevn/dockerfile-practices/blob/main/CONTRIBUTING.md)
 
 <a id="s7.1-contributing-guide"></a>
 
-### Acknowledgement
+### 7.2 Acknowledgement
 
 <a id="s7.2-acknowledgement"></a>
 
