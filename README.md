@@ -19,7 +19,7 @@ See README.md for details.
 -->
 
 # Good practices on writing Dockerfile
-Last updated: Jun 11, 2023
+Last updated: Jun 13, 2023
 
 Website: [https://chrislevn.github.io/dockerfile-practices/](https://chrislevn.github.io/dockerfile-practices/)
 <br/>
@@ -64,9 +64,15 @@ Simple demos running Docker with Python: [https://github.com/chrislevn/dockerfil
 - [5 Good demo](#s5-good-demo)
 - [6 Basic steps to running Docker file with docker cli:](#s6-basic-steps-to-running-docker-file-with-docker-cli)
     - [6.1 Running Docker with Docker compose](#s6.1-run-docker-with-docker-compose)
-    - [6.1.1 Docker compose](#s6.1.1-docker-compose)
-    - [6.1.2 Docker compose vs Docker run](#s6.1.2-docker-compose-vs-docker-run")
-    - [6.1.3 Docker compose usage](#s6.1.3-docker-compose-usage)
+        - [6.1.1 Docker compose](#s6.1.1-docker-compose)
+        - [6.1.2 Docker compose vs Docker run](#s6.1.2-docker-compose-vs-docker-run")
+        - [6.1.3 Docker compose usage](#s6.1.3-docker-compose-usage)
+    - [6.2 Running Docker image with Kubernetes](#s6.2-run-docker-with-kubernetes)
+        - [What is Kubernetes](#s6.2.1-what-is-kubernetes)
+        - [Running public Docker image with Kubernetes](#s6.2.2-run-public-docker-image-with-kubernetes)
+        - [6.2.3 Running private Docker image with Kubernetes](#s6.2.3-run-private-docker-image-with-kubernetes)
+        - [6.2.4 Running Docker image with Minikube](#s6.2.4-run-docker-image-with-minikube) 
+        - [6.3 Add load balancer with Nginx](#s6.3-add-load-balancer-with-nginx) 6.3.1 What is load balancer s6.3.1-what-is-load-balancer 6.3.2 Ngnix s6.3.2-ngnix 6.3.3 Add load balancer to Docker compose 6.3.3 Add load balancer to Docker compose s6.3.3-add-load-balancer-to-docker-compose
 - [7 Contributing](#s7-contributing)
     - [7.1 Contributing guide](#s7.1-contributing-guide)
     - [7.2 Acknowledgement](#s7.2-acknowledgement)
@@ -1186,18 +1192,304 @@ To disable docker compose, run
 ```bash
 docker compose down
 ```
-<!-- 
-### 6.2 Running Docker with Kubernetes
+
+### 6.2 Running Docker image with Kubernetes
 
 <a id="s6.2-run-docker-with-kubernetes"></a>
 
+#### 6.2.1 What is Kubernetes
+
+<a id="s6.2.1-what-is-kubernetes"></a>
+
+Kubernetes is an open-source container orchestration platform developed by Google. It automates the deployment, scaling, and management of containerized applications. With Kubernetes, you can easily manage and coordinate multiple containers that run across a cluster of servers.
+#### 6.2.2 Running public Docker image with Kubernetes
+
+<a id="s6.2.2-run-public-docker-image-with-kubernetes"></a>
+
+1. **Build the Docker Image:** Build the Docker image using the Dockerfile. Run the following command in the directory containing the Dockerfile:
+
+```perl
+docker build -t my-python-app .
+```
+2. **Push the Docker Image:** Push the built image to a container registry of your choice, such as Docker Hub or a private registry. This step is necessary if you want to deploy the image from the registry using Kubernetes. Here's an example command to push the image to Docker Hub:
+
+```perl
+docker push your-docker-username/my-python-app
+```
+
+3. **Create Kubernetes Configurations:**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: your-docker-username/my-python-app
+          ports:
+            - containerPort: 5001
+          env:
+            - name: PORT
+              value: "5001"
+            - name: AUTHOR
+              value: "Christopher Le"
+```
+
+4. **Deploy the Kubernetes Objects:** Apply the Kubernetes configuration by running the following command:
+
+```perl
+kubectl apply -f my-app-deployment.yaml
+```
+
+5. **Accessing the Application:** By default, the application is accessible within the Kubernetes cluster. To expose it externally, you can create a Kubernetes service. Create a YAML file (e.g., `my-app-service.yaml`) with the following contents:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5001
+  type: LoadBalancer
+```
+
+This configuration creates a LoadBalancer service that exposes the application on port 80. Apply the service by running the following command:
+
+```perl 
+kubectl apply -f my-app-service.yaml
+```
+
+Once the service is created, you can access your application using the external IP address assigned to the service. Open a web browser and visit `http://<external-ip>:80` to interact with your application.
+
+#### 6.2.3 Running private Docker image with Kubernetes 
+
+<a id="s6.2.3-run-private-docker-image-with-kubernetes"></a>
+
+1. **Create a Secret:** Kubernetes provides a mechanism called Secrets to store sensitive information securely, such as credentials for accessing private container registries. Create a Secret to store the authentication details required to pull the private Docker image. Run the following command, replacing the placeholders with your registry credentials:
+
+```bash
+kubectl create secret docker-registry <secret-name> --docker-server=<registry-server> --docker-username=<username> --docker-password=<password> --docker-email=<email>
+```
+
+- `<secret-name>` is the name you choose for the Secret. 
+- `<registry-server>` is the URL of your private container registry. 
+- `<username>`, `<password>`, and `<email>` are the credentials required to access the registry.
+
+2. **Update the Kubernetes Deployment:** Modify your Kubernetes Deployment configuration to use the created Secret for authentication. Add the following section to your Deployment configuration:
+
+```yaml
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: <secret-name>
+```
+
+`<secret-name>` should match the name you provided when creating the Secret in the previous step.
+
+3. **Apply the Changes:** Apply the updated Deployment configuration using the kubectl apply command:
+
+```bash
+kubectl apply -f <deployment-file>.yaml
+```
+
+`<deployment-file>.yaml` is the path to your Deployment configuration file.
+
+4. **Kubernetes Pulls Private Image:** With the Secret configured in the Deployment, Kubernetes will use the provided credentials to authenticate with your private container registry and pull the image when deploying the application.
+
+Ensure that the Kubernetes cluster where you are deploying your application has network access to the private container registry. If the registry is within a private network, you may need to configure additional networking or authentication mechanisms to establish the connection.
+
+#### 6.2.4 Running Docker image with Minikube 
+
+<a id="s6.2.4-run-docker-image-with-minikube"></a>
+
+**Minikube** is a lightweight Kubernetes implementation that creates a VM on your local machine and deploys a simple cluster containing only one node. Minikube is available for Linux, macOS, and Windows systems. 
+
+1. **Start Minikube:** Start Minikube on your local machine by running the following command:
+
+```bash
+minikube start
+```
+
+2. **Build the Docker Image:** Build the Docker image for your application using the Dockerfile. Navigate to the directory containing the Dockerfile and run the following command:
+
+```bash
+docker build -t my-app-image .
+```
+
+3. **Load Docker Image into Minikube:** Load the Docker image into the Minikube environment by running the following command:
+
+```bash
+eval $(minikube docker-env)
+docker image load -i my-app-image.tar
+```
+
+4. **Create Kubernetes Deployment:** Create a Kubernetes Deployment configuration file (e.g., `my-app-deployment.yaml`) to define the deployment of your application. Here's an example configuration for a simple deployment:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: my-app-image
+          ports:
+            - containerPort: 80
+```
+
+5. **Apply the Deployment:** Apply the Deployment configuration to create the deployment in Minikube by running the following command:
+
+```console
+kubectl apply -f my-app-deployment.yaml
+```
+
+6. **Expose the Deployment:** To access your application, you need to expose it outside the cluster. In Minikube, you can create a NodePort service to expose the deployment. Create a service configuration file (e.g., `my-app-service.yaml`) with the following contents:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30000
+```
+
+This configuration creates a NodePort service that exposes the application on `port 30000`. Apply the service by running the following command:
+
+```perl
+kubectl apply -f my-app-service.yaml
+```
+
+7. **Access the Application:** To access your application, you can use the Minikube IP and the NodePort assigned to the service. Run the following command to get the Minikube IP:
+
+```console
+minikube ip
+```
+
+Remember to clean up the resources when you're done by running `kubectl delete deployment my-app-deployment` and `kubectl delete service my-app-service`. Additionally, you can stop Minikube by running `minikube stop`.
+
+### 6.3 Add load balancer with Nginx
+
+<a id="s6.3-add-load-balancer-with-nginx"></a> 
+
+#### 6.3.1 What is load balancer
+
+<a id="s6.3.1-what-is-load-balancer"></a> 
 
 
+A load balancer is a networking device or software component that evenly distributes incoming network traffic across multiple servers or resources. It acts as a central point of contact for client requests and forwards those requests to the appropriate backend servers based on predefined rules or algorithms.
 
-### 6.3 Add load balancer
+#### 6.3.2 Ngnix 
 
-<a id="s6.2-add-load-balancer"></a> -->
+<a id="s6.3.2-ngnix"></a> 
 
+**Nginx** (pronounced "engine-x") is a popular open-source web server and reverse proxy server. It is known for its high performance, scalability, and ability to efficiently handle concurrent connections. Nginx is designed to handle a large number of client requests while consuming fewer resources compared to traditional web servers.
+
+**Nginx** is often used as a load balancer alongside its web server capabilities. It can be configured as a reverse proxy and load balancer to distribute incoming traffic across multiple backend servers. This makes Nginx a versatile tool for managing and scaling web applications.
+
+#### 6.3.3 Add load balancer to Docker compose 
+
+<a id="s6.3.3-add-load-balancer-to-docker-compose"></a> 
+
+To add a load balancer to a Docker Compose configuration, you can use a reverse proxy server, such as Nginx or HAProxy, to distribute incoming traffic across multiple containers running your application. Here's an example of how you can add Nginx as a load balancer in a Docker Compose file:
+
+```yaml
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app1
+      - app2
+
+  app1:
+    build:
+      context: ./app1
+    # Other configurations for your app1 container
+
+  app2:
+    build:
+      context: ./app2
+    # Other configurations for your app2 container
+```
+
+In the above example, we have three services defined: `nginx`, `app1`, and `app2`. The nginx service uses the official Nginx image and maps `port 80` of the host to port 80 of the Nginx container. The volumes section mounts a custom `nginx.conf` file, which we'll create next.
+
+Create an `nginx.conf` file in the same directory as the Docker Compose file with the following content:
+
+```conf
+events {}
+
+http {
+  upstream app_servers {
+    server app1:5000;
+    server app2:5000;
+  }
+
+  server {
+    listen 80;
+    server_name localhost;
+
+    location / {
+      proxy_pass http://app_servers;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+    }
+  }
+}
+```
+
+In the `nginx.conf`, we define an upstream block called app_servers, which lists the hostnames and ports of the backend application containers (`app1` and `app2`). The server block sets up the Nginx configuration to listen on `port 80` and forward incoming requests to the `app_servers` upstream.
+
+To start the Docker Compose stack, navigate to the directory containing the Docker Compose file and run the following command:
+
+```shell
+docker compose up
+```
+
+This will start the Nginx container and the two application containers (`app1` and `app2`). Incoming traffic will be load balanced by Nginx and forwarded to the backend application containers based on the configuration in `nginx.conf`.
+
+Make sure to adjust the build configurations for `app1` and `app2` according to your application's needs. Also, update the port numbers and other settings as required for your specific use case.
+
+Note: This configuration assumes that your backend application containers (`app1` and `app2`) are configured to listen on `port 5000`. Adjust the upstream server addresses accordingly if your containers use different ports.
 
 ---
 
