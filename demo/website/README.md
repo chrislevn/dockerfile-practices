@@ -6,13 +6,29 @@
 A calculator app with Python
 
 ## How to run
-1. Check if the file is running properly locally
-- Creare `.env` file with PORT=<YOUR_DESIRED_PORT_NUMBER>
+1. Open a terminal or command prompt and navigate to the directory where your Dockerfile is located.
+2. Check if the file is running properly locally
 - Run `python3 app.py`
 
-2. Run the file with Docker
+3. Run the file with Docker
 - Make sure Docker is running
-- Run `docker build -t calculator-app . `
-- Run `docker run -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> calculator-app`, (eg, `docker run -p 5001:5001 calculator-app`)
+- export version 
+```bash
+export VERSION=$(cat version.txt)
+```
+- Run this code to build the Docker image
+```bash
+docker build -t calculator-app:$VERSION . 
+```
+- Run `docker compose up ` to run Docker
 
-3. To have the image exists and removes itself, run `docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> calculator-app`, (eg, `docker run --rm -p 5001:5001 calculator-app`)
+4. To have the image exists and removes itself, run 
+
+```bash
+docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> calculator-app:$VERSION
+```
+
+For example:
+```
+docker run --rm -p 5001:5001 calculator-app:$VERSION
+```

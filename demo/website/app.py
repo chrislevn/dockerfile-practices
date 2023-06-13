@@ -1,7 +1,7 @@
-# app.py
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import os
+
 
 app = Flask(__name__)
 
@@ -11,6 +11,7 @@ def home():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
+    """Perform calculation based on user input"""
     num1 = float(request.form['num1'])
     num2 = float(request.form['num2'])
     operation = request.form['operation']
@@ -35,9 +36,10 @@ def calculate():
 
     return jsonify(result=result, operation=operation_str, num1=num1, num2=num2)
 
+
 if __name__ == '__main__':
     load_dotenv()
     port = int(os.environ.get('PORT', 5001))
     print("Running on port", port)
-    print("Authored by", os.environ.get('AUTHOR'))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    print("Authored by", os.environ.get('AUTHOR', 'Author not set'))
+    app.run(host='0.0.0.0', port=port)

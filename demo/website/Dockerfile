@@ -2,6 +2,7 @@
 FROM python:3.9-slim
 
 LABEL maintainer="Christopher Le"
+LABEL version="1.0"
 
 WORKDIR /app
 

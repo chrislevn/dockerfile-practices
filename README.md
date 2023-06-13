@@ -63,6 +63,10 @@ Simple demos running Docker with Python: [https://github.com/chrislevn/dockerfil
     - [4.7 ONBUILD](#s4.7-onbuild)
 - [5 Good demo](#s5-good-demo)
 - [6 Basic steps to running Docker file with docker cli:](#s6-basic-steps-to-running-docker-file-with-docker-cli)
+    - [6.1 Running Docker with Docker compose](#s6.1-run-docker-with-docker-compose)
+    - [6.1.1 Docker compose](#s6.1.1-docker-compose)
+    - [6.1.2 Docker compose vs Docker run](#s6.1.2-docker-compose-vs-docker-run")
+    - [6.1.3 Docker compose usage](#s6.1.3-docker-compose-usage)
 - [7 Contributing](#s7-contributing)
     - [7.1 Contributing guide](#s7.1-contributing-guide)
     - [7.2 Acknowledgement](#s7.2-acknowledgement)
@@ -1109,6 +1113,91 @@ Note: If your application requires ports to be exposed, you can use the -p optio
 ```console
 docker run -it -p 8000:8000 myapp:1.0
 ```
+
+### 6.1 Running Docker with Docker compose
+
+<a id="s6.1-run-docker-with-docker-compose"></a>
+
+#### 6.1.1 Docker compose
+
+<a id="s6.1.1-docker-compose"></a>
+
+Docker Compose is a tool that allows you to define and manage multi-container Docker applications. It provides a way to describe the configuration of multiple services, networks, and volumes using a YAML file format. With Docker Compose, you can define a set of containers that make up your application, specify their configurations, and manage their lifecycle as a single unit.
+
+### 6.1.2 Docker compose vs Docker run
+
+<a id="s6.1.2-docker-compose-vs-docker-run"></a>
+
+1. **Docker Compose:** Docker Compose is used for managing multi-container applications. It allows you to define and orchestrate multiple containers, their configurations, networks, and volumes using a declarative YAML file called a Compose file. With Docker Compose, you can define the desired state of your application and manage it as a single unit. Compose simplifies the process of running complex applications with multiple interconnected services, making it easier to replicate and share application environments across different environments.
+
+To run a Dockerfile with Docker compose, we use
+
+```bash
+docker compose up
+```
+
+2. `docker run` command: The `docker run` command is used to run a single container. It allows you to start a container from a specific Docker image with specific configurations. You can specify various options such as environment variables, exposed ports, volume mounts, and networking settings when running a container with `docker run`. The `docker run` command is typically used for running individual containers in isolation rather than managing complex multi-container applications.
+
+To run with docker run, we use
+
+```bash
+docker run <IMAGE_NAME>:<TAG>
+```
+
+### 6.1.3 Docker compose usage
+
+<a id="s6.1.3-docker-compose-usage"></a>
+
+- Add `docker-compose.yml` in the same directory of your `Dockerfile`
+
+Sample `docker-compose.yml` file: 
+
+```YAML
+version: "1"                        #   Specifies the version of Docker Compose syntax being used.
+services:                           #   Defines the services within the Docker Compose file.
+  deployment:                       #   Represents the first service name
+    image: <IMAGE_NAME>:$VERSION  #   Specifies the Docker image to be used for the "deployment" service. 
+                                    #   It uses a variable $VERSION to dynamically specify the image version.
+    build:                          #   Configures the build settings for the container.            
+      dockerfile: Dockerfile        #   It specifies the Dockerfile to be used for building the container. 
+                                    #   It assumes there is a file named Dockerfile in the same directory.
+    ports:                          #   Maps ports between the container and the host machine.
+      - "5001:5001"                 #   Binds port 5001 of the container to port 5001 of the host machine.
+    volumes:                        #   Mounts directories or files from the host machine to the container.
+      - .:/app    #   Mounts the current directory (denoted by .) to the /app directory inside the container.
+    environment:                    #   Mounts directories or files from the host machine to the container. 
+      PORT: 5001                    #   Sets the environment variable PORT to the value 5001.
+      AUTHOR: "Christopher Le"      #   Sets the environment variable AUTHOR to the value "Christopher Le".
+
+```
+
+- Build the image first by running
+```bash
+docker run <IMAGE_NAME>:$VERSION
+```
+
+- Run docker compose by
+
+```bash
+docker compose up
+```
+
+To disable docker compose, run
+```bash
+docker compose down
+```
+<!-- 
+### 6.2 Running Docker with Kubernetes
+
+<a id="s6.2-run-docker-with-kubernetes"></a>
+
+
+
+
+### 6.3 Add load balancer
+
+<a id="s6.2-add-load-balancer"></a> -->
+
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## How to run
 1. Check if the file is running properly locally
-- Creare `.env` file with PORT=<YOUR_DESIRED_PORT_NUMBER> (eg, PORT=5001)
+- Run `export PORT=<YOUR_DESIRED_PORT>`
 - Run `python3 app.py`
 - Check RestAPI with Postman client
 - With `POST`, make sure to add the body as JSON type. For example:
@@ -17,10 +17,25 @@
 }
 ```
 
-
 2. Run the file with Docker
 - Make sure Docker is running
-- Run `docker build -t restapi . `
-- Run `docker run -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> restapi`, (eg, `docker run -p 5001:5001 restapi`)
+- export version 
+```bash
+export VERSION=$(cat version.txt)
+```
+- Run this code to build the Docker image
+```bash
+docker build -t rest-api:$VERSION . 
+```
+- Run `docker compose up` to run Docker
 
-3. To have the image exists and removes itself, run `docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> restapi`, (eg, `docker run --rm -p 5001:5001 restapi`)
+3. To have the image exists and removes itself, run 
+
+```bash
+docker run --rm -p <YOUR_DESIRED_PORT_NUMBER>:<YOUR_DESIRED_PORT_NUMBER> rest-api:$VERSION
+```
+
+For example:
+```
+docker run --rm -p 5001:5001 rest-api:$VERSION
+```
